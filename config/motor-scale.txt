@@ -1,0 +1,11 @@
+
+# Units are [mm] here (ideally would like to have 10.00mm per step);
+
+#  See #204(F3)-205-206, which are taken in a row
+#  first  last  scale-X  scale-Y  
+    107   213     9.87     9.87
+
+    277   561     9.79     9.87
+
+   1000   9999   10.00    10.00
+   
