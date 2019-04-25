@@ -1,0 +1,21 @@
+N = 589
+ID = $(Cluster).$(Process)
+
+Universe       = vanilla
+Initialdir     = /direct/eic+u/perez/mpgdMar2019
+Executable     = /bin/csh
+Arguments      = dojob.csh $(Process)
+
+Notification   = Error
+Log            = log/_$(Cluster).log
+Output         = log/_$(ID).out
+Error          = log/_$(ID).err
+Requirements   = (CPU_Speed >= 1)
+
+Priority       = +20
+GetEnv         = True
++Job_Type      = "highmem"
+request_memory = 1.8GB
+
+
+Queue $(N)

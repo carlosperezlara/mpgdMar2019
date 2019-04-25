@@ -14,6 +14,8 @@ void plot2019(unsigned fnum=1437, int detO = -1)
   TCanvas *main = new TCanvas();
   main->Divide(4,4);
 
+  ofstream finBXY( Form("logBXY/bxy_%d.dat",fnum) );
+
   TF1 *bx = new TF1("bx","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *by = new TF1("by","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *dx = new TF1("dx","[0]*TMath::Gaus(x,[1],[2])");
@@ -40,6 +42,7 @@ void plot2019(unsigned fnum=1437, int detO = -1)
     hist4->Fit(bx);
     tex->DrawLatexNDC(0.5,0.4,Form("#sigma %.1f (%.0f)",bx->GetParameter(2),bx->GetParError(2)*100));
     tex->DrawLatexNDC(0.5,0.5,Form("#mu %.1f (%.0f)",bx->GetParameter(1),bx->GetParError(1)*100));
+    finBXY << bx->GetParameter(1) << " ";
     //=====
     main->cd(6);  tree->Draw(Form("by%s>>hist5_%d(100,-20,+20)",det.Data(),i));
     TH1D *hist5 = (TH1D*) gROOT->FindObject( Form("hist5_%d",i) );
@@ -52,6 +55,7 @@ void plot2019(unsigned fnum=1437, int detO = -1)
     Double_t bymea = by->GetParameter(1);
     tex->DrawLatexNDC(0.5,0.4,Form("#sigma %.1f (%.0f)",by->GetParameter(2),by->GetParError(2)*100));
     tex->DrawLatexNDC(0.5,0.5,Form("#mu %.1f (%.0f)",by->GetParameter(1),by->GetParError(1)*100));
+    finBXY << by->GetParameter(1) << " ";
     //=====
     main->cd(7);  tree->Draw(Form("bx2mm%s>>hist6_%d",det.Data(),i));
     main->cd(8);  tree->Draw(Form("by2mm%s>>hist7_%d",det.Data(),i));
@@ -99,5 +103,6 @@ void plot2019(unsigned fnum=1437, int detO = -1)
 
     main->SaveAs( Form("quicklook_%d.pdf",fnum), "pdf");
   }
+  finBXY << std::endl;
   main->SaveAs( Form("quicklook_%d.pdf]",fnum), "pdf");
 } // plot2019()
