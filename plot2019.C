@@ -15,11 +15,16 @@ void plot2019(unsigned fnum=1437, int detO = -1)
   main->Divide(4,4);
 
   ofstream finBXY( Form("logBXY/bxy_%d.dat",fnum) );
+  ofstream finANG( Form("logANG/ang_%d.dat",fnum) );
 
   TF1 *bx = new TF1("bx","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *by = new TF1("by","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *dx = new TF1("dx","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *mxb = new TF1("mxb","[0]+[1]*x");
+  Double_t sumbx=0;
+  Double_t sumby=0;
+  Int_t nbx=0;
+  Int_t nby=0;
   main->SaveAs( Form("quicklook_%d.pdf[",fnum), "pdf");
   for(int i=0; i!=8; ++i) {
     if(detO>-1) {
@@ -43,6 +48,12 @@ void plot2019(unsigned fnum=1437, int detO = -1)
     tex->DrawLatexNDC(0.5,0.4,Form("#sigma %.1f (%.0f)",bx->GetParameter(2),bx->GetParError(2)*100));
     tex->DrawLatexNDC(0.5,0.5,Form("#mu %.1f (%.0f)",bx->GetParameter(1),bx->GetParError(1)*100));
     finBXY << bx->GetParameter(1) << " ";
+    if( (det.Contains("D4")&&fnum<1292) || (det.Contains("D1")&&fnum>1465) ) {
+      //ignore the rotated chambers                                                                                                    
+    } else {
+      sumbx += bx->GetParameter(1);
+      nbx += 1;
+    }
     //=====
     main->cd(6);  tree->Draw(Form("by%s>>hist5_%d(100,-20,+20)",det.Data(),i));
     TH1D *hist5 = (TH1D*) gROOT->FindObject( Form("hist5_%d",i) );
@@ -56,6 +67,12 @@ void plot2019(unsigned fnum=1437, int detO = -1)
     tex->DrawLatexNDC(0.5,0.4,Form("#sigma %.1f (%.0f)",by->GetParameter(2),by->GetParError(2)*100));
     tex->DrawLatexNDC(0.5,0.5,Form("#mu %.1f (%.0f)",by->GetParameter(1),by->GetParError(1)*100));
     finBXY << by->GetParameter(1) << " ";
+    if( (det.Contains("D4")&&fnum<1292) || (det.Contains("D1")&&fnum>1465) ) {
+      //ignore the rotated chambers                                                                                                    
+    } else {
+      sumby += by->GetParameter(1);
+      nby += 1;
+    }
     //=====
     main->cd(7);  tree->Draw(Form("bx2mm%s>>hist6_%d",det.Data(),i));
     main->cd(8);  tree->Draw(Form("by2mm%s>>hist7_%d",det.Data(),i));
@@ -90,6 +107,7 @@ void plot2019(unsigned fnum=1437, int detO = -1)
     pro14->Draw("SAME");
     pro14->Fit(mxb,"R","", bymea-bysig, bymea+bysig );
     tex->DrawLatexNDC(0.2,0.2,Form("m %.4f +-%.4f",mxb->GetParameter(1),mxb->GetParError(1)));
+    finANG << mxb->GetParameter(1) << " ";
     //=====
     var = Form("dx%s:gx%s>>hist15_%d(1000,%f,%f,1000,%f,%f)",det.Data(),det.Data(),i,gxmea-3*gxsig,gxmea+3*gxsig,dxmea-3*dxsig,dxmea+3*dxsig);
     cut = Form("TMath::Abs(by%s+%f)<3*%f",det.Data(),-bymea,bysig);
@@ -104,5 +122,15 @@ void plot2019(unsigned fnum=1437, int detO = -1)
     main->SaveAs( Form("quicklook_%d.pdf",fnum), "pdf");
   }
   finBXY << std::endl;
+  finANG << std::endl;
   main->SaveAs( Form("quicklook_%d.pdf]",fnum), "pdf");
+
+  cout << nbx << " " << nby << endl;
+  if(nbx>0) {
+    ofstream fangout( Form("logBXY/bxy_avg_%d.dat",fnum) );
+    cout << sumbx/nbx << " " << sumby/nby << endl;
+    fangout << sumbx/nbx << " " << sumby/nby  << endl;
+    fangout.close();
+  }
+
 } // plot2019()
