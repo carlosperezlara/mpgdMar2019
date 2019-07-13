@@ -1,0 +1,9 @@
+ --        0    0  
+ V00a      1    0  ArCO2_7030 GEM G2 Elvia 2018
+ Z03k.A    2    0  ArISO_9505 MM  A1
+ B01a      3    0  ArCO2_7030 uRW NEW,N2
+ Z03k.A    4  -90  ArISO_9505 MM  A2 Elvia 2019 90DEG CLOCKWISE
+ B01a      5    0  ArCO2_7030 GEM 004-2
+ Z03k.A    6    0  ArISO_9505 MM  A5 Elvia 2019 Resit 10 MOmh
+ Z03k.B    7    0  ArISO_9505 MM  B2 Resit 100 kOhm
+ B00e      8    0  ArCO2_7030 GEM G1 TTM 2018

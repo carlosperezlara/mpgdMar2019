@@ -1,0 +1,9 @@
+ --        0    0  
+ V00a      1  -90  CF4        GEM G2 Elvia 2018
+ Z03k.A    2    0  ArIso_9505 MM  A1 - Flow AS3 - New Gas - Drift change from 5mm to 12.4mm
+ B01a      3    0  CF4        uRW #2
+ Z03k.A    4    0  CF4        GEM A6
+ B01a      5    0  CF4        GEM TTM
+ --        6    0  
+ B01a      7    0  ArIso_9505 Hyb 
+ --        8    0 
