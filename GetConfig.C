@@ -56,6 +56,16 @@ void GetConfig() {
   }
   fin.close();
 
+  fin.open( Form("cells/cells_%d.dat",fRun) );
+  for(int det=1;;++det) {
+    fin >> fCell;
+    cout << fCell << endl;
+    if(det==fDet) {
+      break;
+    }
+  }
+  fin.close();
+
   fin.open( Form("elog/aquaconf/run_0000%d.p907",fRun) );
   index = fDet;
   std::string line;

@@ -1,10 +1,12 @@
 
 // =====================================================================================
 
-void analysis2019(unsigned fnum=1194)
+void analysis2019(unsigned fnum=1194, int events=-1)
 {
   FNAL4ALL *fnal4all = new FNAL4ALL();
-  //fnal4all->SetStat(30000);
+  if(events>0) {
+    fnal4all->SetStat(events);
+  }
   fnal4all->IgnoreTriggerCountMismatch();
   //fnal4all->RemapDreamEvents();
 
