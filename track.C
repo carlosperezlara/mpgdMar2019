@@ -64,11 +64,22 @@ void track(int idx ) {
   if(histC->GetEntries()<10) return 1;
   tex->DrawLatexNDC(0.5,0.8, Form("Mean  %.3f",histC->GetMean()) );
   tex->DrawLatexNDC(0.5,0.7, Form("RMS  %.3f",histC->GetRMS()) );
+  main->cd(1);
+  tex->DrawLatexNDC(0.5,0.8, Form("Mean  %.3f",histX->GetMean()) );
+  tex->DrawLatexNDC(0.5,0.7, Form("RMS  %.3f",histX->GetRMS()) );
+  main->cd(2);
+  tex->DrawLatexNDC(0.5,0.8, Form("Mean  %.3f",histY->GetMean()) );
+  tex->DrawLatexNDC(0.5,0.7, Form("RMS  %.3f",histY->GetRMS()) );
+
   main->SaveAs( Form("track/track_%d.pdf", fRun), "pdf");
   main->SaveAs( Form("track/track_%d.root", fRun), "root");
 
   ofstream fout( Form("track/dat/chi2_stat_%d.dat",fRun) );
-  fout << fRun << " " << histC->GetMean() << " " << histC->GetRMS() << endl;
+  fout << fRun;
+  fout << " " << histC->GetMean() << " " << histC->GetRMS();
+  fout << " " << histX->GetMean() << " " << histX->GetRMS();
+  fout << " " << histY->GetMean() << " " << histY->GetRMS();
+  fout << endl;
   fout.close();
   return 0;
 }

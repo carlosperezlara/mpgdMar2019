@@ -1,5 +1,6 @@
 TTree *tree;
 #include "GetConfig.C"
+TDatime dtime;
 
 void resolution(int idx=24, int det = 3 )
 {
@@ -222,16 +223,19 @@ void resolution(int idx=24, int det = 3 )
   hist19->Fit(dx);
   dxmea = dx->GetParameter(1);
   dxsig = dx->GetParameter(2);
-  tex->DrawLatexNDC(0.5,0.4,Form("#sigma %.1f (%.2f)",dxsig*1e3,dx->GetParError(2)*1e3));
-  tex->DrawLatexNDC(0.5,0.5,Form("#mu %.1f (%.2f)",dxmea*1e3,dx->GetParError(1)*1e3));
+  tex->SetTextColor(kRed-3);
+  tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",dxsig*1e3,dx->GetParError(2)*1e3));
+  tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",dxmea*1e3,dx->GetParError(1)*1e3));
+  tex->SetTextColor(kBlack);
   hist19->GetXaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   tex->DrawLatexNDC(0.15,0.85,Form("%s %s", fSDet.Data(), fTech.Data()));
   tex->DrawLatexNDC(0.15,0.80,Form("Board %s", fBoard.Data()));
   tex->DrawLatexNDC(0.15,0.75,Form("Cell %s", fCell.Data()));
   tex->DrawLatexNDC(0.15,0.70,Form("xPitch %.3f mm", fXPitch));
-  tex->DrawLatexNDC(0.15,0.65,Form("xStretch %.3f mm", fXStretch));
-  tex->DrawLatexNDC(0.15,0.60,Form("yBeat %.3f mm", fYBeat));
+  tex->DrawLatexNDC(0.15,0.65,Form("xStretch %.1f", fXStretch));
+  tex->DrawLatexNDC(0.15,0.60,Form("yBeat %.1f", fYBeat));
   tex->DrawLatexNDC(0.15,0.50,Form("Run %d", fRun));
+  tex->DrawLatexNDC(0.15,0.20,Form("Last Updated %d %d", dtime.GetDate(), dtime.GetTime()));
 
   main1->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf[",
 		     det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
@@ -311,7 +315,7 @@ void resolution(int idx=24, int det = 3 )
 		      det,fTech.Data(),fBoard.Data(),fRun) );
   std::cout << " RESULTS IN " << Form("res/D%d/data/reso_%s_%s_run%d.dat",
 				      det,fTech.Data(),fBoard.Data(),fRun) << std::endl;
-  fout << dx->GetParameter(2);
+  fout << dx->GetParameter(2)*1e3;
   //fout << resultReso;
   fout << " " << fRun;
   fout << " " << fCell;

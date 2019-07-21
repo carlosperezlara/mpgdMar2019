@@ -29,10 +29,13 @@ int maketable(TString file = "GEM_V00a") {
 
   for(;;++n) {
     fin >> cell >> xmin >> xmax >> ymin >> ymax >> run >> det >> xp >> yb >> st;
-    if(!fin.good()) break;
+    if(!fin.good()) {
+      cout << "BROKE AT " << cell.Data() << " " << run << endl;
+      break;
+    }
     int row, col;
     FindCoord(cell,row,col);
-    //cout << cell.Data() << " R:" << row << " C:" << col << endl;
+    cout << cell.Data() << " R:" << row << " C:" << col << endl;
     data[row][col].push_back( Form("%d %d | %.1f %.1f | %.1f %.1f | %.3f %.3f %d",
 				   run,det,xmin,xmax,ymin,ymax,xp,yb,st) );
     scell[row][col].push_back( cell.Data() );
@@ -42,7 +45,7 @@ int maketable(TString file = "GEM_V00a") {
     link[row][col].push_back( Form("%d_%d",run,det) );
     pdf_fiducial[row][col].push_back( Form("res/D%d/FIDUCIAL_D%d_%d.pdf",det,det,run) );
     TString sres1 = Form("res/D%d/data/reso_%s_run%d.dat",det,file.Data(),run);
-    cout << sres1.Data() << endl;
+    //cout << sres1.Data() << endl;
     ifstream fres1(sres1.Data());
     float res=0;
     fres1 >> res;
@@ -83,6 +86,7 @@ int maketable(TString file = "GEM_V00a") {
       fout << "<td>" << endl;
       cout << "**** COL " << c << " ROW " << r << endl;
       //fout << "**** COL " << c << " ROW " << r << endl;
+      if(scell[r][c].size()<1) continue;
       fout << scell[r][c][0].Data() << "  ";
       fout << specs[r][c][0].Data() << "<BR>";
       for(uint l=0; l!=data[r][c].size(); ++l) {
