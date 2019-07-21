@@ -13,7 +13,7 @@ echo $A
 
 root -b -l -q resolution.C\($1,1\) #D1
 #root -b -l -q resolution.C\($1,2\) #D2
-root -b -l -q resolution.C\($1,3\) #D3
+#root -b -l -q resolution.C\($1,3\) #D3
 #root -b -l -q resolution.C\($1,4\) #D4
 #root -b -l -q resolution.C\($1,5\) #D5
 #root -b -l -q resolution.C\($1,6\) #D6
