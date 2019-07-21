@@ -315,7 +315,8 @@ void resolution(int idx=24, int det = 3 )
 		      det,fTech.Data(),fBoard.Data(),fRun) );
   std::cout << " RESULTS IN " << Form("res/D%d/data/reso_%s_%s_run%d.dat",
 				      det,fTech.Data(),fBoard.Data(),fRun) << std::endl;
-  fout << dx->GetParameter(2)*1e3;
+  fout << " " << dx->GetParameter(1);
+  fout << " " << dx->GetParameter(2)*1e3;
   //fout << resultReso;
   fout << " " << fRun;
   fout << " " << fCell;
