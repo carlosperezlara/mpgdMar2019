@@ -113,7 +113,7 @@ void resolution(int idx=24, int det = 3 )
   Double_t gxsig = hist11->GetRMS();
   //=====
   TCanvas *main2 = new TCanvas();
-  main2->Divide(3,2);
+  main2->Divide(3,3);
   main2->cd(1);
   tree->Draw(Form("dx%s>>hist12",fSDet.Data()),        cuts1.Data());
   TH1D *hist12 = (TH1D*) gROOT->FindObject( "hist12" );
@@ -178,37 +178,9 @@ void resolution(int idx=24, int det = 3 )
   hist16->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   hist16->GetXaxis()->SetTitle( Form("by%s [mm]",fSDet.Data()) );
   //=====
-  var = Form("dx%s:gx%s>>hist17(200,%f,%f,200,%f,%f)",
-	     fSDet.Data(),fSDet.Data(),
-	     gxmea-5,gxmea+5,dxmea-3*dxsig,dxmea+3*dxsig);
-  main2->cd(4);
-  tree->Draw(var.Data(),    cuts1.Data(), "colz");
-  TH2D *hist17 = (TH2D*) gROOT->FindObject( "hist17" );
-  TProfile *pro17 = hist17->ProfileX( "prof17" );
-  pro17->SetMarkerColor(kBlack);
-  pro17->SetLineColor(kBlack);
-  pro17->Draw("SAME");
-  hist17->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
-  hist17->GetXaxis()->SetTitle( Form("gx%s [mm]",fSDet.Data()) );
-  //=====
   cuts2 = Form("%s&&(bx%s>%f)&&(bx%s<%f)&&(by%s>%f)&&(by%s<%f)",
 	       cuts1.Data(),fSDet.Data(),fGXmin,fSDet.Data(),fGXmax,
 	       fSDet.Data(),fGYmin,fSDet.Data(),fGYmax);
-  //=====
-  var = Form("dx%s:gx%s>>hist18(100,%f,%f,100,%f,%f)",
-	     fSDet.Data(),fSDet.Data(),
-	     gxmea-5,gxmea+5,dxmea-3*dxsig,dxmea+3*dxsig);
-  main2->cd(5);
-  tree->Draw(var.Data(),    cuts2.Data(), "colz");
-  TH2D *hist18 = (TH2D*) gROOT->FindObject( "hist18" );
-  //hist18->SetTitle("Residual  dependece  in  X");
-  //hist18->SaveAs("fig1.root");
-  TProfile *pro18 = hist18->ProfileX( "prof18" );
-  pro18->SetMarkerColor(kBlack);
-  pro18->SetLineColor(kBlack);
-  pro18->Draw("SAME");
-  hist18->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
-  hist18->GetXaxis()->SetTitle( Form("gx%s [mm]",fSDet.Data()) );
   //=====
   main2->cd(6);
   tree->Draw(Form("dx%s>>hist19(100,%f,%f)",fSDet.Data(),
@@ -236,6 +208,38 @@ void resolution(int idx=24, int det = 3 )
   tex->DrawLatexNDC(0.15,0.60,Form("yBeat %.1f", fYBeat));
   tex->DrawLatexNDC(0.15,0.50,Form("Run %d", fRun));
   tex->DrawLatexNDC(0.15,0.20,Form("Last Updated %d %d", dtime.GetDate(), dtime.GetTime()));
+  
+  //=====
+  int nbinsX = (fGXmax-fGXmin)/(0.02); // each 20 microns
+  var = Form("dx%s:gx%s>>hist17(%d,%f,%f,200,%f,%f)",
+	     fSDet.Data(),fSDet.Data(),nbinsX,
+	     fGXmin,fGXmax,dxmea-3*dxsig,dxmea+3*dxsig);
+  main2->cd(5);
+  tree->Draw(var.Data(),    cuts2.Data(), "colz");
+  TH2D *hist17 = (TH2D*) gROOT->FindObject( "hist17" );
+  TProfile *pro17 = hist17->ProfileX( "prof17" );
+  pro17->SetMarkerColor(kBlack);
+  pro17->SetLineColor(kBlack);
+  pro17->Draw("SAME");
+  hist17->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
+  hist17->GetXaxis()->SetTitle( Form("bx%s [mm]",fSDet.Data()) );
+  //=====
+  int nbinsY = (fGYmax-fGYmin)/(0.02); // each 20 microns
+  var = Form("dx%s:by%s>>hist18(%d,%f,%f,200,%f,%f)",
+	     fSDet.Data(),fSDet.Data(),nbinsY,
+	     fGYmin,fGYmax,dxmea-3*dxsig,dxmea+3*dxsig);
+  main2->cd(7);
+  tree->Draw(var.Data(),    cuts2.Data(), "colz");
+  TH2D *hist18 = (TH2D*) gROOT->FindObject( "hist18" );
+  //hist18->SetTitle("Residual  dependece  in  X");
+  //hist18->SaveAs("fig1.root");
+  TProfile *pro18 = hist18->ProfileX( "prof18" );
+  pro18->SetMarkerColor(kBlack);
+  pro18->SetLineColor(kBlack);
+  pro18->Draw("SAME");
+  hist18->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
+  hist18->GetXaxis()->SetTitle( Form("by%s [mm]",fSDet.Data()) );
+  //=====
 
   main1->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf[",
 		     det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),

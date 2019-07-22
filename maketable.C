@@ -100,7 +100,9 @@ int maketable(TString file = "GEM_V00a") {
 	fout << pdf_fiducial[r][c][l].Data() << "\">";
 	fout << link[r][c][l].Data() << "</a> : ";
 	//fout << rmea[r][c][l].Data() << "|";
-	fout << res1[r][c][l].Data() << "<BR>|";
+	fout << "<font color=\"red\">";
+	fout << res1[r][c][l].Data();
+	fout << "</font><BR>|";
 	fout << xcuts[r][c][l].Data() << "|";
 	fout << ycuts[r][c][l].Data() << "|";
 	fout << "<BR>" << endl;
