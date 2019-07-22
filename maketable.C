@@ -65,7 +65,7 @@ int maketable(TString file = "GEM_V00a") {
   fout << "   table {" << endl;
   fout << "  font-family: arial, sans-serif;" << endl;
   //fout << "  font-size:8px;" << endl;
-  fout << "  font-size:11px;" << endl;
+  fout << "  font-size:10px;" << endl;
   fout << "  border-collapse: collapse;" << endl;
   fout << " width: 100%;" << endl;
   fout << " }" << endl;
@@ -98,9 +98,9 @@ int maketable(TString file = "GEM_V00a") {
 	if(res1[r][c][l]=="0.0") continue;
 	fout << "<a href=\"";
 	fout << pdf_fiducial[r][c][l].Data() << "\">";
-	fout << link[r][c][l].Data() << "</a> : <BR> ";
-	fout << rmea[r][c][l].Data() << "|";
-	fout << res1[r][c][l].Data() << "|";
+	fout << link[r][c][l].Data() << "</a> : ";
+	//fout << rmea[r][c][l].Data() << "|";
+	fout << res1[r][c][l].Data() << "<BR>|";
 	fout << xcuts[r][c][l].Data() << "|";
 	fout << ycuts[r][c][l].Data() << "|";
 	fout << "<BR>" << endl;
