@@ -25,5 +25,27 @@ int addConstants() {
     fin.close();
     fou.close();
   }
+
+  float bxMin, bxMax, byMin, byMax;
+  fin.open( "fiducial.D1.dat" );
+  fou.open( "fiducial.D1.dat.new" );
+  for(;;) {
+    fin >> run >> bxMin >> bxMax >> byMin >> byMax;
+    if(!fin.good()) break;
+    float off = 0;
+    for(int j=0; j!=9; ++j) {
+      if( run>=minrun[j]&&run<minrun[j+1] ) {
+	off = offset[j];
+	break;
+      }
+    }
+    fou << run;
+    fou << Form("   %+.1f   %+.1f   %+.1f   %+.1f\n",
+		bxMin+off, bxMax+off,
+		byMin, byMax);
+  }
+  fin.close();
+  fou.close();
+
   return 0;
 }
