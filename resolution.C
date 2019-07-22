@@ -314,10 +314,8 @@ void resolution(int idx=24, int det = 3 )
   //=====
   main2->cd(8);
   histDX17->Draw();
-  dxX->SetParameter(1,dx->GetParameter(1));
-  dxX->SetParLimits(1,dx->GetParameter(1)-3,dx->GetParameter(1)+3);
-  dxX->SetParameter(2,dx->GetParameter(2));
-  dxX->SetParLimits(2,0.001,2*dx->GetParameter(2));
+  dxX->SetParameter(1,0); dxX->SetParLimits(1,-1,+1);
+  dxX->SetParameter(2,dx->GetParameter(2)); dxX->SetParLimits(2,0.001,1.5*dx->GetParameter(2));
   histDX17->Fit(dxX);
   tex->SetTextColor(kGreen-3);
   tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",dxX->GetParameter(2)*1e3,
@@ -370,10 +368,8 @@ void resolution(int idx=24, int det = 3 )
   //=====
   main2->cd(12);
   histDX18->Draw();
-  dxY->SetParameter(1,dx->GetParameter(1));
-  dxY->SetParLimits(1,dx->GetParameter(1)-3,dx->GetParameter(1)+3);
-  dxY->SetParameter(2,dx->GetParameter(2));
-  dxY->SetParLimits(2,0.001,2*dx->GetParameter(2));
+  dxY->SetParameter(1,0); dxY->SetParLimits(1,-1,+1);
+  dxY->SetParameter(2,dx->GetParameter(2)); dxY->SetParLimits(2,0.001,1.5*dx->GetParameter(2));
   histDX18->Fit(dxY);
   tex->SetTextColor(kBlue-3);
   tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",dxY->GetParameter(2)*1e3,
