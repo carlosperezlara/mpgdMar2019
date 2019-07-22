@@ -26,6 +26,9 @@ int maketable(TString file = "GEM_V00a") {
   vector<TString> link[10][10];
   vector<TString> rmea[10][10];
   vector<TString> res1[10][10];
+  vector<TString> res2[10][10];
+  vector<TString> res3[10][10];
+  vector<TString> res4[10][10];
   vector<TString> pdf_fiducial[10][10];
 
   for(;;++n) {
@@ -49,11 +52,14 @@ int maketable(TString file = "GEM_V00a") {
     //cout << sres1.Data() << endl;
     ifstream fres1(sres1.Data());
     float mean;
-    float res=0;
-    fres1 >> mean >> res;
+    float dres1=0, dres2=0, dres3=0, dres4=0;
+    fres1 >> mean >> dres1 >> dres2 >> dres3 >> dres4;
     fres1.close();
     rmea[row][col].push_back( Form("%.1f",mean) );
-    res1[row][col].push_back( Form("%.1f",res) );
+    res1[row][col].push_back( Form("%.1f",dres1) );
+    res2[row][col].push_back( Form("%.1f",dres2) );
+    res3[row][col].push_back( Form("%.1f",dres3) );
+    res4[row][col].push_back( Form("%.1f",dres4) );
   }
   cout << "lines " << n << endl;
 
@@ -100,9 +106,24 @@ int maketable(TString file = "GEM_V00a") {
 	fout << pdf_fiducial[r][c][l].Data() << "\">";
 	fout << link[r][c][l].Data() << "</a> : ";
 	//fout << rmea[r][c][l].Data() << "|";
+	//==
 	fout << "<font color=\"red\">";
 	fout << res1[r][c][l].Data();
-	fout << "</font><BR>|";
+	fout << "</font>";
+	//==
+	fout << "<font color=\"green\">";
+	fout << res2[r][c][l].Data();
+	fout << "</font>";
+	//==
+	fout << "<font color=\"green\">";
+	fout << res3[r][c][l].Data();
+	fout << "</font>";
+	//==
+	fout << "<font color=\"blue\">";
+	fout << res4[r][c][l].Data();
+	fout << "</font>";
+	//==
+	fout << "<BR>|";
 	fout << xcuts[r][c][l].Data() << "|";
 	fout << ycuts[r][c][l].Data() << "|";
 	fout << "<BR>" << endl;

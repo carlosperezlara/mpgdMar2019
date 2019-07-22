@@ -27,6 +27,9 @@ void resolution(int idx=24, int det = 3 )
   TF1 *bx = new TF1("bx","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *by = new TF1("by","[0]*TMath::Gaus(x,[1],[2])");
   TF1 *dx = new TF1("dx","[0]*TMath::Gaus(x,[1],[2])+[3]");
+  TF1 *dxX  = new TF1("dxX" ,"[0]*TMath::Gaus(x,[1],[2])+[3]");
+  TF1 *dxY  = new TF1("dxY" ,"[0]*TMath::Gaus(x,[1],[2])+[3]");
+  TF1 *dxXY = new TF1("dxXY","[0]*TMath::Gaus(x,[1],[2])+[3]");
   TF1 *mxb = new TF1("mxb","[0]+[1]*x");
   TLine *line = new TLine();
   line->SetLineColor( kRed-3 );
@@ -113,7 +116,7 @@ void resolution(int idx=24, int det = 3 )
   Double_t gxsig = hist11->GetRMS();
   //=====
   TCanvas *main2 = new TCanvas();
-  main2->Divide(3,3);
+  main2->Divide(4,3);
   main2->cd(1);
   tree->Draw(Form("dx%s>>hist12",fSDet.Data()),        cuts1.Data());
   TH1D *hist12 = (TH1D*) gROOT->FindObject( "hist12" );
@@ -148,7 +151,7 @@ void resolution(int idx=24, int det = 3 )
   //=====
   var = Form("dx%s:bx%s>>hist15(200,%f,%f,200,%f,%f)",
 	     fSDet.Data(),fSDet.Data(),
-	     bxmea-5,bxmea+5,dxmea-3*dxsig,dxmea+3*dxsig);
+	     bxmea-7,bxmea+7,dxmea-3*dxsig,dxmea+3*dxsig);
   main2->cd(2);
   tree->Draw(var.Data(),    cuts1.Data(), "colz");
   TH2D *hist15 = (TH2D*) gROOT->FindObject( "hist15" );
@@ -161,7 +164,7 @@ void resolution(int idx=24, int det = 3 )
   //=====
   var = Form("dx%s:by%s>>hist16(200,%f,%f,200,%f,%f)",
 	     fSDet.Data(),fSDet.Data(),
-	     bymea-5,bymea+5,dxmea-3*dxsig,dxmea+3*dxsig);
+	     bymea-7,bymea+7,dxmea-3*dxsig,dxmea+3*dxsig);
   cuts2 = Form("%s&&(bx%s>%f)&&(bx%s<%f)",
 	       cuts1.Data(),fSDet.Data(),fGXmin,fSDet.Data(),fGXmax);
   main2->cd(3);
@@ -182,7 +185,7 @@ void resolution(int idx=24, int det = 3 )
 	       cuts1.Data(),fSDet.Data(),fGXmin,fSDet.Data(),fGXmax,
 	       fSDet.Data(),fGYmin,fSDet.Data(),fGYmax);
   //=====
-  main2->cd(6);
+  main2->cd(4);
   tree->Draw(Form("dx%s>>hist19(100,%f,%f)",fSDet.Data(),
 		  hist12->GetMean()-2*hist12->GetRMS(),
 		  hist12->GetMean()+2*hist12->GetRMS()),
@@ -203,15 +206,14 @@ void resolution(int idx=24, int det = 3 )
   tex->DrawLatexNDC(0.15,0.85,Form("%s %s", fSDet.Data(), fTech.Data()));
   tex->DrawLatexNDC(0.15,0.80,Form("Board %s", fBoard.Data()));
   tex->DrawLatexNDC(0.15,0.75,Form("Cell %s", fCell.Data()));
-  tex->DrawLatexNDC(0.15,0.70,Form("xPitch %.3f mm", fXPitch));
+  tex->DrawLatexNDC(0.15,0.70,Form("xPitch %.1f mm", fXPitch));
   tex->DrawLatexNDC(0.15,0.65,Form("xStretch %.1f", fXStretch));
-  tex->DrawLatexNDC(0.15,0.60,Form("yBeat %.1f", fYBeat));
+  tex->DrawLatexNDC(0.15,0.60,Form("yBeat %.1f mm", 20/fYBeat));
   tex->DrawLatexNDC(0.15,0.50,Form("Run %d", fRun));
-  tex->DrawLatexNDC(0.15,0.20,Form("Last Updated %d %d", dtime.GetDate(), dtime.GetTime()));
-  
+  tex->DrawLatexNDC(0.15,0.20,Form("Last Updated %d %d", dtime.GetDate(), dtime.GetTime()));  
   //=====
-  int nbinsX = (fGXmax-fGXmin)/(0.02); // each 20 microns
-  var = Form("dx%s:gx%s>>hist17(%d,%f,%f,200,%f,%f)",
+  int nbinsX = (fGXmax-fGXmin)/fXPitch/0.05; // each 50 microns
+  var = Form("dx%s:bx%s>>hist17(%d,%f,%f,200,%f,%f)",
 	     fSDet.Data(),fSDet.Data(),nbinsX,
 	     fGXmin,fGXmax,dxmea-3*dxsig,dxmea+3*dxsig);
   main2->cd(5);
@@ -223,12 +225,16 @@ void resolution(int idx=24, int det = 3 )
   pro17->Draw("SAME");
   hist17->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   hist17->GetXaxis()->SetTitle( Form("bx%s [mm]",fSDet.Data()) );
+  TF1 *dxVX = new TF1("dxVX",
+		      Form("[0]*TMath::Cos(x*TMath::TwoPi()/%f)+[1]*TMath::Sin(x*TMath::TwoPi()/%f)+%f+[2]*x",fXPitch,fXPitch,dxmea)
+		      );
+  pro17->Fit(dxVX);
   //=====
-  int nbinsY = (fGYmax-fGYmin)/(0.02); // each 20 microns
+  int nbinsY = (fGYmax-fGYmin)/(20/fYBeat)/(0.05); // each 50 microns
   var = Form("dx%s:by%s>>hist18(%d,%f,%f,200,%f,%f)",
 	     fSDet.Data(),fSDet.Data(),nbinsY,
 	     fGYmin,fGYmax,dxmea-3*dxsig,dxmea+3*dxsig);
-  main2->cd(7);
+  main2->cd(9);
   tree->Draw(var.Data(),    cuts2.Data(), "colz");
   TH2D *hist18 = (TH2D*) gROOT->FindObject( "hist18" );
   //hist18->SetTitle("Residual  dependece  in  X");
@@ -239,8 +245,107 @@ void resolution(int idx=24, int det = 3 )
   pro18->Draw("SAME");
   hist18->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   hist18->GetXaxis()->SetTitle( Form("by%s [mm]",fSDet.Data()) );
+  TF1 *dxVY = new TF1("dxVY",
+		      Form("[0]*TMath::Cos(x*TMath::TwoPi()/%f)+[1]*TMath::Sin(x*TMath::TwoPi()/%f)+%f+[2]*x",20/fYBeat,20/fYBeat,dxmea)
+		      );
+  pro18->Fit(dxVY);
   //=====
-
+  TH2D *histR17 = new TH2D("histR17",
+			   Form("DX  -  NL(X);bx%s [mm];dx%s [mm]",fSDet.Data(),fSDet.Data()),
+			   nbinsX,fGXmin,fGXmax,200,-3*dxsig,3*dxsig);
+  TH2D *histR18 = new TH2D("histR18",
+			   Form("DX  -  NL(Y);by%s [mm];dx%s [mm]",fSDet.Data(),fSDet.Data()),
+			   nbinsY,fGYmin,fGYmax,200,-3*dxsig,+3*dxsig);
+  TH1D *histDX17 = new TH1D("histDX17",
+			    Form("DX  -  NL(X);dx%s [mm]",fSDet.Data()),
+			    200,-3*dxsig,+3*dxsig);
+  TH1D *histDX18 = new TH1D("histDX18",
+			    Form("DX  -  NL(Y);dx%s [mm]",fSDet.Data()),
+			    200,-3*dxsig,+3*dxsig);
+  TH1D *histDX19 = new TH1D("histDX19",
+			    Form("DX  -  NL(X)  -  NL(Y);dx%s [mm]",fSDet.Data()),
+			    200,-3*dxsig,+3*dxsig);
+  Bool_t okDET;
+  Int_t maxDET;
+  UInt_t wdDET;
+  Double_t chi2DET, bxDET, byDET, dxDET;
+  tree->SetBranchAddress(     "chi2",               &chi2DET);
+  tree->SetBranchAddress(Form("ok%s",fSDet.Data()), &okDET);
+  tree->SetBranchAddress(Form("max%s",fSDet.Data()),&maxDET);
+  tree->SetBranchAddress(Form("wd%s",fSDet.Data()), &wdDET);
+  tree->SetBranchAddress(Form("bx%s",fSDet.Data()), &bxDET);
+  tree->SetBranchAddress(Form("by%s",fSDet.Data()), &byDET);
+  tree->SetBranchAddress(Form("dx%s",fSDet.Data()), &dxDET);
+  Long64_t EndOfLoop = tree->GetEntries();
+  for(Long64_t i1=0; i1<EndOfLoop; ++i1) {
+    if(i1%10000 == 0) {
+      std::cout << " Executing event number :  " << i1 << "/" << EndOfLoop;
+      std::cout << Form(" (%.1f)",i1*100.0/EndOfLoop) << std::endl;
+    }
+    tree->GetEntry(i1);
+    //cout << chi2DET << "|"<< maxDET << "|"<< wdDET << "|"<< bxDET << endl;
+    //CUTS
+    if(!okDET || maxDET>3500 || chi2DET>fChiMax ||
+       wdDET<=1 || wdDET>=7 || bxDET<fGXmin ||
+       bxDET>fGXmax || byDET<fGYmin || byDET>fGYmax ) {
+      continue;
+    }
+    //PLOT
+    histR17->Fill( bxDET, dxDET-dxVX->Eval(bxDET) );
+    histR18->Fill( byDET, dxDET-dxVY->Eval(byDET) );
+    histDX17->Fill( dxDET-dxVX->Eval(bxDET) );
+    histDX18->Fill( dxDET-dxVY->Eval(byDET) );
+    histDX19->Fill( dxDET-dxVX->Eval(bxDET)-dxVY->Eval(byDET) );
+  }
+  //=====
+  main2->cd(6);
+  histR17->Draw("colz");
+  //=====
+  main2->cd(7);
+  histDX17->Draw();
+  dxX->SetParameter(1,dx->GetParameter(1));
+  dxX->SetParLimits(1,dx->GetParameter(1)-3,dx->GetParameter(1)+3);
+  dxX->SetParameter(2,dx->GetParameter(2));
+  dxX->SetParLimits(2,0.001,2*dx->GetParameter(2));
+  histDX17->Fit(dxX);
+  tex->SetTextColor(kRed-3);
+  tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",dxX->GetParameter(2)*1e3,
+				   dxX->GetParError(2)*1e3));
+  tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",dxX->GetParameter(1)*1e3,
+				   dxX->GetParError(1)*1e3));
+  tex->SetTextColor(kBlack);
+  //=====
+  main2->cd(10);
+  histR18->Draw("colz");
+  //=====
+  main2->cd(11);
+  histDX18->Draw();
+  dxY->SetParameter(1,dx->GetParameter(1));
+  dxY->SetParLimits(1,dx->GetParameter(1)-3,dx->GetParameter(1)+3);
+  dxY->SetParameter(2,dx->GetParameter(2));
+  dxY->SetParLimits(2,0.001,2*dx->GetParameter(2));
+  histDX18->Fit(dxY);
+  tex->SetTextColor(kRed-3);
+  tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",dxY->GetParameter(2)*1e3,
+				   dxY->GetParError(2)*1e3));
+  tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",dxY->GetParameter(1)*1e3,
+				   dxY->GetParError(1)*1e3));
+  tex->SetTextColor(kBlack);
+  //=====
+  main2->cd(12);
+  histDX19->Draw();
+  dxXY->SetParameter(1,dx->GetParameter(1));
+  dxXY->SetParLimits(1,dx->GetParameter(1)-3,dx->GetParameter(1)+3);
+  dxXY->SetParameter(2,dx->GetParameter(2));
+  dxXY->SetParLimits(2,0.001,2*dx->GetParameter(2));
+  histDX19->Fit(dxXY);
+  tex->SetTextColor(kRed-3);
+  tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",dxXY->GetParameter(2)*1e3,
+				   dxXY->GetParError(2)*1e3));
+  tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",dxXY->GetParameter(1)*1e3,
+				   dxXY->GetParError(1)*1e3));
+  tex->SetTextColor(kBlack);
+  //=====
   main1->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf[",
 		     det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		"pdf");
@@ -321,6 +426,9 @@ void resolution(int idx=24, int det = 3 )
 				      det,fTech.Data(),fBoard.Data(),fRun) << std::endl;
   fout << " " << dx->GetParameter(1);
   fout << " " << dx->GetParameter(2)*1e3;
+  fout << " " << dxX->GetParameter(2)*1e3;
+  fout << " " << dxY->GetParameter(2)*1e3;
+  fout << " " << dxXY->GetParameter(2)*1e3;
   //fout << resultReso;
   fout << " " << fRun;
   fout << " " << fCell;
