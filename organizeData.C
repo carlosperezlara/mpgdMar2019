@@ -9,6 +9,7 @@ void organizeData(int idx=24, int det = 3 )
 
   TString file = Form("%s_%s.txt", fTech.Data(), fBoard.Data());
   cout << file.Data() << endl;
+  if(fCell.Length()<2) return 1;
   ofstream fout;
   fout.open( file.Data(), std::ofstream::out | std::ofstream::app);
   fout << Form("%s %.1f %.1f %.1f %.1f %d %d", fCell.Data(), 
