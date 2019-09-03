@@ -4,6 +4,7 @@ Int_t fDet;
 Double_t fXPitch;
 Double_t fYBeat;
 Double_t fXStretch;
+TString fCellHeader;
 TString fCell;
 TString fSDet;
 TString fBoard;
@@ -49,7 +50,7 @@ void GetConfig() {
   fin.open("elog/runs.dat.evt.cel");
   index = fIndex;
   for(;;--index) {
-    fin >> fCell;
+    fin >> fCellHeader;
     if(index==0) {
       break;
     }
@@ -59,11 +60,11 @@ void GetConfig() {
   fin.open( Form("cells/cells_%d.dat",fRun) );
   for(int det=1;;++det) {
     fin >> fCell;
-    cout << fCell << endl;
     if(det==fDet) {
       break;
     }
   }
+  cout << "Cell Reader " << fCellHeader << " | Cell Real " << fCell << endl;
   fin.close();
 
   fin.open( Form("elog/aquaconf/run_0000%d.p907",fRun) );
@@ -81,8 +82,9 @@ void GetConfig() {
   fTech = ( (TObjString*) (tline.Tokenize(" "))->At(4) )->GetString();
   fin.close();
 
-  fin.open( Form("mapping/pitch_%s.dat",fBoard.Data()) );
   TString cell;
+  /*
+  fin.open( Form("mapping/pitch_%s.dat",fBoard.Data()) );
   for(;;) {
     fin >> cell >> fXPitch;
     if(!fin.good()) break;
@@ -91,6 +93,7 @@ void GetConfig() {
     }
   }
   fin.close();
+  */
 
   fin.open( Form("mapping/%s.dat",fBoard.Data()) );
   for(;;) {

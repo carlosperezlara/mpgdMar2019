@@ -8,6 +8,7 @@ void resolution(int idx=24, int det = 3 )
   fDet = det;
   GetConfig();
   std::cout << "Run " << fRun << endl;
+  std::cout << "CellHeader " << fCellHeader << endl;
   std::cout << "Cell " << fCell << endl;
   std::cout << "Detector " << fDet << endl;
   std::cout << "Technology " << fTech.Data() << endl;
@@ -120,7 +121,7 @@ void resolution(int idx=24, int det = 3 )
   Double_t gxsig = hist11->GetRMS();
   //=====
   TCanvas *main2 = new TCanvas();
-  main2->Divide(4,3);
+  main2->Divide(4,4);
   main2->cd(1);
   tree->Draw(Form("dx%s>>hist12",fSDet.Data()),        cuts1.Data());
   TH1D *hist12 = (TH1D*) gROOT->FindObject( "hist12" );
@@ -155,7 +156,7 @@ void resolution(int idx=24, int det = 3 )
   //=====
   var = Form("dx%s:bx%s>>hist15(200,%f,%f,200,%f,%f)",
 	     fSDet.Data(),fSDet.Data(),
-	     bxmea-7,bxmea+7,dxmea-3*dxsig,dxmea+3*dxsig);
+	     bxmea-7,bxmea+7,dxmea-5*dxsig,dxmea+5*dxsig);
   main2->cd(2);
   tree->Draw(var.Data(),    cuts1.Data(), "colz");
   TH2D *hist15 = (TH2D*) gROOT->FindObject( "hist15" );
@@ -168,7 +169,7 @@ void resolution(int idx=24, int det = 3 )
   //=====
   var = Form("dx%s:by%s>>hist16(200,%f,%f,200,%f,%f)",
 	     fSDet.Data(),fSDet.Data(),
-	     bymea-7,bymea+7,dxmea-3*dxsig,dxmea+3*dxsig);
+	     bymea-7,bymea+7,dxmea-5*dxsig,dxmea+5*dxsig);
   cuts2 = Form("%s&&(bx%s>%f)&&(bx%s<%f)",
 	       cuts1.Data(),fSDet.Data(),fGXmin,fSDet.Data(),fGXmax);
   main2->cd(3);
@@ -203,8 +204,8 @@ void resolution(int idx=24, int det = 3 )
   dxmea = dx->GetParameter(1);
   dxsig = dx->GetParameter(2);
   tree->Draw(Form("dx%s>>histDX19(200,%f,%f)",fSDet.Data(),
-		  dxmea-3*dxsig,
-		  dxmea+3*dxsig),
+		  dxmea-5*dxsig,
+		  dxmea+5*dxsig),
 	     cuts2.Data());
   hist19 = (TH1D*) gROOT->FindObject( "histDX19" );
   hist19->Fit(dx);
@@ -222,7 +223,7 @@ void resolution(int idx=24, int det = 3 )
   tex->SetTextSize(0.07);
   tex->DrawLatexNDC(0.15,0.90,Form("%s %s", fSDet.Data(), fTech.Data()));
   tex->DrawLatexNDC(0.15,0.80,Form("Board %s", fBoard.Data()));
-  tex->DrawLatexNDC(0.15,0.70,Form("Cell %s", fCell.Data()));
+  tex->DrawLatexNDC(0.15,0.70,Form("Cell %s => %s", fCellHeader.Data(), fCell.Data()));
   tex->DrawLatexNDC(0.15,0.60,Form("xPitch %.1f mm", fXPitch));
   tex->DrawLatexNDC(0.15,0.50,Form("xStretch %.1f", fXStretch));
   tex->DrawLatexNDC(0.15,0.40,Form("yBeat %.1f mm", 20/fYBeat));
@@ -235,7 +236,7 @@ void resolution(int idx=24, int det = 3 )
   //=====
   main2->cd(6);
   tree->Draw(Form("dx%s:bx%s>>histO17(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
-		  nbinsX,fGXmin,fGXmax,200,dxmea-3*dxsig,dxmea+3*dxsig),
+		  nbinsX,fGXmin,fGXmax,200,dxmea-5*dxsig,dxmea+5*dxsig),
              cuts2.Data(),"colz");
   TH2D *histO17 = (TH2D*) gROOT->FindObject( "histO17" );
   histO17->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
@@ -254,21 +255,21 @@ void resolution(int idx=24, int det = 3 )
   //=====
   TH2D *histR17 = new TH2D("histR17",
 			   Form(";bx%s [mm];dx%s - NL(bxD)  [mm]",fSDet.Data(),fSDet.Data()),
-			   nbinsX,fGXmin,fGXmax,200,-3*dxsig,3*dxsig);
+			   nbinsX,fGXmin,fGXmax,200,-5*dxsig,5*dxsig);
   TH1D *histDX17 = new TH1D("histDX17",
 			    Form(";dx%s - NL(bXD)  [mm]",fSDet.Data()),
-			    200,-3*dxsig,+3*dxsig);
+			    200,-5*dxsig,+5*dxsig);
   histDX17->SetLineColor(kBlack);
   //======
   TH2D *histO18 = new TH2D("histO18",
 			   Form(";by%s [mm];dx%s - NL(bxD)  [mm]",fSDet.Data(),fSDet.Data()),
-			   nbinsY,fGYmin,fGYmax,200,-3*dxsig,+3*dxsig);
+			   nbinsY,fGYmin,fGYmax,200,-5*dxsig,+5*dxsig);
   TH2D *histR18 = new TH2D("histR18",
 			   Form(";by%s [mm];dx%s - NL(bxD) - NL(byD)  [mm]",fSDet.Data(),fSDet.Data()),
-			   nbinsY,fGYmin,fGYmax,200,-3*dxsig,+3*dxsig);
+			   nbinsY,fGYmin,fGYmax,200,-5*dxsig,+5*dxsig);
   TH1D *histDX18 = new TH1D("histDX18",
 			    Form(";dx%s - NL(bxD) - NL(byD)  [mm]",fSDet.Data()),
-			    200,-3*dxsig,+3*dxsig);
+			    200,-5*dxsig,+5*dxsig);
   histDX18->SetLineColor(kBlack);
   Double_t corrX = 0;
   Double_t corrXY = 0;
@@ -323,6 +324,18 @@ void resolution(int idx=24, int det = 3 )
   tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",dxX->GetParameter(1)*1e3,
 				   dxX->GetParError(1)*1e3));
   tex->SetTextColor(kBlack);
+  //=====
+  main2->cd(14);
+  tree->Draw(Form("wd%s>>Fhist1(10,-0.5,9.5)",fSDet.Data()),  cuts2.Data());
+  tree->Draw(Form("ampl%s>>Fhist2(100,0,1e+5)",fSDet.Data()),  cuts2.Data());
+  TH1D *Fhist1 = (TH1D*) gROOT->FindObject("Fhist1");
+  TH1D *Fhist2 = (TH1D*) gROOT->FindObject("Fhist2");
+  Fhist1->GetXaxis()->SetTitle( Form("wd%s",fSDet.Data()) );
+  Fhist2->GetXaxis()->SetTitle( Form("ampl%s",fSDet.Data()) );
+  main2->cd(14);
+  Fhist1->DrawNormalized();
+  main2->cd(15);
+  Fhist2->Draw();
   //=====
   main2->cd(10);
   histO18->Draw("colz");
