@@ -41,9 +41,10 @@ int maketable(TString file = "GEM_V00a_D8_I0") {
       break;
     }
     if(xmin>xmax) continue;
+    //if( (xmax-xmin>1*xp) && (xp>0) ) continue;
     int row, col;
     FindCoord(cell,row,col);
-    cout << cell.Data() << " R:" << row << " C:" << col << endl;
+    //cout << cell.Data() << " R:" << row << " C:" << col << endl;
     data[row][col].push_back( Form("%d %d | %.1f %.1f | %.1f %.1f | %.3f %.3f %d",
 				   run,det,xmin,xmax,ymin,ymax,xp,yb,st) );
     scell[row][col].push_back( cell.Data() );
@@ -112,12 +113,12 @@ int maketable(TString file = "GEM_V00a_D8_I0") {
     fout << "<td><h3>"<< Form("%d",r) << "</h3></td>" << endl;
     for(int c=0; c!=10; ++c) {
       fout << "<td>" << endl;
-      cout << "**** COL " << c << " ROW " << r << endl;
+      //cout << "**** COL " << c << " ROW " << r << endl;
       //fout << "**** COL " << c << " ROW " << r << endl;
       if(scell[r][c].size()<1) continue;
       bool foundone = false;
       for(uint l=0; l!=data[r][c].size(); ++l) {
-	cout << data[r][c][l].Data() << endl;
+	//cout << data[r][c][l].Data() << endl;
 	if(res1[r][c][l]=="0.0") continue;
 	if(!foundone) {
 	  fout << scell[r][c][0].Data() << "  ";
