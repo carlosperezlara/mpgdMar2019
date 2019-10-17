@@ -35,12 +35,17 @@ void resolution(int idx=24, int det = 3 )
   dxX->SetLineColor(kGreen-3);
   dxY->SetLineColor(kBlue-3);
   dxXY->SetLineColor(kCyan-3);
+  dx->SetParameter(3,0);   dx->SetParLimits(3,+1,-1); 
+  dxX->SetParameter(3,0);  dxX->SetParLimits(3,+1,-1); 
+  dxY->SetParameter(3,0);  dxY->SetParLimits(3,+1,-1); 
+  dxXY->SetParameter(3,0); dxXY->SetParLimits(3,+1,-1); 
   TF1 *mxb = new TF1("mxb","[0]+[1]*x");
   TLine *line = new TLine();
   line->SetLineColor( kRed-3 );
   TString cuts0 = Form("(ok%s==1)&&(max%s<3500)&&(chi2<%f)",
 		       fSDet.Data(),fSDet.Data(),fChiMax);
-  TString cuts1 = Form("%s&&(wd%s>1)&&(wd%s<7)",
+  //TString cuts1 = Form("%s&&(wd%s>1)&&(wd%s<7)",
+  TString cuts1 = Form("%s&&(wd%s>0)&&(wd%s<7)",
 		       cuts0.Data(),fSDet.Data(),fSDet.Data());
   TString cuts2;
   cuts0 = cuts1;
