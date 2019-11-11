@@ -1,0 +1,1 @@
+cat MM_Z03k.A_D2_I1.txt4 MM_Z03k.A_D2_I2.txt4 MM_Z03k.A_D2_I3.txt4 MM_Z03k.A_D2_I4.txt4 MM_Z03k.A_D2_I5.txt4 MM_Z03k.A_D2_I6.txt4 >  MM_Z03k.A_D2_I16.txt4
