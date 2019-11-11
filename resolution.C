@@ -23,6 +23,11 @@ void resolution(int idx=24, int det = 3 )
   TLatex *tex = new TLatex();
   tex->SetTextSize(0.05);
 
+  TCanvas *publish = new TCanvas("pub","pub",800,500);
+  publish->SetTopMargin(0.05);
+  publish->SetRightMargin(0.05);
+  publish->SetBottomMargin(0.15);
+  publish->SetLeftMargin(0.15);
   TCanvas *main1 = new TCanvas();
   main1->Divide(4,3);
   TF1 *bx = new TF1("bx","[0]*TMath::Gaus(x,[1],[2])");
@@ -224,7 +229,7 @@ void resolution(int idx=24, int det = 3 )
   //=====
   int nbinsX = (fGXmax-fGXmin)/fXPitch/0.05; // each 50 microns
   int nbinsY = (fGYmax-fGYmin)/(20/fYBeat)/(0.05); // each 50 microns
-  main2->cd(5);
+  main2->cd(13);
   tex->SetTextSize(0.07);
   tex->DrawLatexNDC(0.15,0.90,Form("%s %s", fSDet.Data(), fTech.Data()));
   tex->DrawLatexNDC(0.15,0.80,Form("Board %s", fBoard.Data()));
@@ -255,6 +260,26 @@ void resolution(int idx=24, int det = 3 )
   pro17->Fit(dxVX);
   histO17->Draw("colz");
   pro17->Draw("SAME");
+
+  //---*---
+  publish->cd();
+  tree->Draw( Form("dx%s:bx%s>>histDXMBX(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
+		   2*nbinsX,fGXmin,fGXmax,200,dxmea-0.75,dxmea+0.75),
+	      cuts2.Data(), "col");
+  TH2D *DXMBX = (TH2D*) gROOT->FindObject( "histDXMBX" );
+  DXMBX->SetTitle( "" );
+  DXMBX->GetYaxis()->SetLabelSize(0.07);
+  DXMBX->GetXaxis()->SetLabelSize(0.07);
+  DXMBX->GetYaxis()->SetTitleSize(0.07);
+  DXMBX->GetXaxis()->SetTitleSize(0.07);
+  DXMBX->GetYaxis()->SetTitleOffset(1.0);
+  DXMBX->GetXaxis()->SetTitle( "BeamX  [mm]" );
+  DXMBX->GetYaxis()->SetTitle( "Residual  [mm]" );
+  DXMBX->GetXaxis()->SetNdivisions(508);
+  publish->SaveAs( Form("res/D%d/DXBXP_D%d_%d.pdf",det,det,fRun), "pdf");
+  //=====
+  main2->cd(5);
+  DXMBX->Draw("col");
   //=====
 
   //=====
@@ -276,18 +301,25 @@ void resolution(int idx=24, int det = 3 )
 			    Form(";dx%s - NL(bxD) - NL(byD)  [mm]",fSDet.Data()),
 			    200,-5*dxsig,+5*dxsig);
   histDX18->SetLineColor(kBlack);
+
+  TH2D *histDXMBY = new TH2D("histDXMBY",
+			     ";BeamY  [mm];Residual  -  Corr(X)  [mm]",
+			     2*nbinsY,fGYmin,fGYmax,200,-0.75,+0.75);
+  histDXMBY->GetYaxis()->SetTitleOffset(0.8);
+
   Double_t corrX = 0;
   Double_t corrXY = 0;
   Bool_t okDET;
   Int_t maxDET;
   UInt_t wdDET;
-  Double_t chi2DET, bxDET, byDET, dxDET;
+  Double_t chi2DET, bxDET, byDET, dxDET, bybeatDET;
   tree->SetBranchAddress(     "chi2",               &chi2DET);
   tree->SetBranchAddress(Form("ok%s",fSDet.Data()), &okDET);
   tree->SetBranchAddress(Form("max%s",fSDet.Data()),&maxDET);
   tree->SetBranchAddress(Form("wd%s",fSDet.Data()), &wdDET);
   tree->SetBranchAddress(Form("bx%s",fSDet.Data()), &bxDET);
   tree->SetBranchAddress(Form("by%s",fSDet.Data()), &byDET);
+  tree->SetBranchAddress(Form("bybeat%s",fSDet.Data()), &bybeatDET);
   tree->SetBranchAddress(Form("dx%s",fSDet.Data()), &dxDET);
   Long64_t EndOfLoop = tree->GetEntries();
   for(Long64_t i1=0; i1<EndOfLoop; ++i1) {
@@ -313,7 +345,21 @@ void resolution(int idx=24, int det = 3 )
     histR17->Fill( bxDET, dxDET-corrX );
     histDX17->Fill( dxDET-corrX );
     histO18->Fill( byDET, dxDET-corrX );
+    histDXMBY->Fill( byDET, dxDET-corrX );
   }
+  //---*---
+  publish->cd();
+  histDXMBY->GetYaxis()->SetLabelSize(0.07);
+  histDXMBY->GetXaxis()->SetLabelSize(0.07);
+  histDXMBY->GetYaxis()->SetTitleOffset(1.0);
+  histDXMBY->GetYaxis()->SetTitleSize(0.07);
+  histDXMBY->GetXaxis()->SetTitleSize(0.07);
+  histDXMBY->GetXaxis()->SetNdivisions(508);
+  histDXMBY->Draw("col");
+  publish->SaveAs( Form("res/D%d/DXBYP_D%d_%d.pdf",det,det,fRun), "pdf");
+  //=====
+  main2->cd(9);
+  histDXMBY->Draw("col");
   //=====
   main2->cd(7);
   histR17->Draw("colz");
@@ -395,6 +441,38 @@ void resolution(int idx=24, int det = 3 )
   tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",dxY->GetParameter(1)*1e3,
 				   dxY->GetParError(1)*1e3));
   tex->SetTextColor(kBlack);
+
+  //---*---
+  tex->SetTextSize(0.08);
+
+  publish->cd();
+  histDX18->SetTitle("");
+  histDX18->Draw();
+  histDX18->GetYaxis()->SetLabelSize(0.07);
+  histDX18->GetXaxis()->SetLabelSize(0.07);
+  histDX18->GetXaxis()->SetTitleSize(0.07);
+  histDX18->GetYaxis()->SetTitleOffset(1.0);
+  histDX18->GetYaxis()->SetTitleSize(0.07);
+  histDX18->GetXaxis()->SetTitle("Residual -  Corr(x,y)    [mm]");
+  histDX18->GetYaxis()->SetTitle("Events");
+  histDX18->GetXaxis()->SetNdivisions(508);
+  tex->SetTextColor(kBlue-3);
+  tex->DrawLatexNDC(0.65,0.80,Form("#sigma  %.0f#mum",dxY->GetParameter(2)*1e3));
+  publish->SaveAs( Form("res/D%d/DX3_D%d_%d.pdf",det,det,fRun), "pdf");
+  hist19->Draw();
+  hist19->SetTitle("");
+  hist19->GetYaxis()->SetLabelSize(0.07);
+  hist19->GetXaxis()->SetLabelSize(0.07);
+  hist19->GetXaxis()->SetTitleSize(0.07);
+  hist19->GetYaxis()->SetTitleOffset(1.0);
+  hist19->GetYaxis()->SetTitleSize(0.07);
+  hist19->GetXaxis()->SetTitle("Residual  (ClusterX  -  BeamX)    [mm]");
+  hist19->GetYaxis()->SetTitle("Events");
+  hist19->GetXaxis()->SetNdivisions(508);
+  tex->SetTextColor(kRed-3);
+  tex->DrawLatexNDC(0.65,0.80,Form("#sigma  %.0f#mum",dx->GetParameter(2)*1e3));
+  publish->SaveAs( Form("res/D%d/DX1_D%d_%d.pdf",det,det,fRun), "pdf");
+
   //=====
   /*
   main2->cd(12);
