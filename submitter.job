@@ -2,7 +2,7 @@ N = 589
 ID = $(Cluster).$(Process)
 
 Universe       = vanilla
-Initialdir     = /direct/eic+u/perez/mpgdMar2019
+Initialdir     = /direct/eic+u/vcanoar/git/mpgdMar2019
 Executable     = /bin/csh
 Arguments      = dojob.csh $(Process)
 
