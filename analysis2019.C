@@ -1,7 +1,7 @@
 
 // =====================================================================================
 
-void analysis2019(unsigned fnum=1194, int events=-1, int w1=-1, int w2=-1)
+void analysis2019(unsigned fnum=1194, int events=-1, int w1=-1, int w2=-1,int merge=-1)
 {
   FNAL4ALL *fnal4all = new FNAL4ALL();
   if(events>0) {
@@ -9,6 +9,9 @@ void analysis2019(unsigned fnum=1194, int events=-1, int w1=-1, int w2=-1)
   }
   fnal4all->IgnoreTriggerCountMismatch();
   fnal4all->SetUseEncoder();
+  if(merge>0)
+    fnal4all->SetMergePadsBy(merge);
+
   //fnal4all->RemapDreamEvents();
 
   //fnal4all->SetRcdaqFileNameMask("/direct/eic+u/perez/mpgdMar2019/data/beam/beam-%08d-0000.evt");
@@ -34,6 +37,6 @@ void analysis2019(unsigned fnum=1194, int events=-1, int w1=-1, int w2=-1)
   //fnal4all->SetTimingWindow("M3", 0, 6);
 
   fnal4all->DoAnalysis(fnum);
-  //fnal4all->DoAnalysis(fnum,"D1");
+  //fnal4all->DoAnalysis(fnum,"D5");
   exit(0);
 } // analysis2019()

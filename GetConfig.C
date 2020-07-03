@@ -105,6 +105,7 @@ void GetConfig() {
   }
   fin.close();
 
+  /*
   fin.open( Form("config/fiducial.%s.dat",fSDet.Data()) );
   int run;
   double tmp1, tmp2, tmp3, tmp4;
@@ -120,6 +121,33 @@ void GetConfig() {
     }
   }
   fin.close();
+  */
+
+  cout << Form("config/%s_%s_%s.cfg",fTech.Data(),fBoard.Data(),fSDet.Data()) << endl;
+  fin.open( Form("config/%s_%s_%s.cfg",fTech.Data(),fBoard.Data(),fSDet.Data()) );
+  int run;
+  double tmp1, tmp2, tmp1a, tmp2a, tmp3, tmp4;
+  TString acell;
+  for(;;) {
+    fin >> cell >> tmp1 >> tmp2 >> tmp1a >> tmp2a >> tmp3 >> tmp4;
+    if(!fin.good()) break;
+    TString acell = fCell[0];
+    if(cell==acell) { // only if found replace
+      fGXmin = tmp1;
+      fGXmax = tmp2;
+      TString arow = fCell[1];
+      int row = arow.Atoi();
+      if(row>4) {
+	fGXmin = tmp1a;
+	fGXmax = tmp2a;
+      }
+      fGYmin = tmp3;
+      fGYmax = tmp4;
+      break;
+    }
+  }
+  fin.close();
+
 
   std::cout << "Index " << fIndex << endl;
   std::cout << "Run " << fRun << endl;
@@ -133,4 +161,5 @@ void GetConfig() {
   std::cout << "ChiMax " << fChiMax << endl;
   std::cout << "GXmin GXmax " << fGXmin << " " << fGXmax << endl;
   std::cout << "GYmin GYmax " << fGYmin << " " << fGYmax << endl;
+
 }
