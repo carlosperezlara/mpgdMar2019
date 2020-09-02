@@ -2,24 +2,11 @@ TTree *tree;
 #include "GetConfig.C"
 TDatime dtime;
 
-void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float cutmultiple=0.8, int merge=2 )
+void resolution2(int idx=24, int det = 3 )
 {
   fIndex = idx;
   fDet = det;
   GetConfig();
-
-  if(fGXmax<fGXmin) {
-    cout << " **** SKIP RUN **** " << endl;
-    return 1;
-  }
-
-  //reduce fiducial by 10%
-  {
-    double dGX = fGXmax - fGXmin;
-    fGXmin = fGXmin + dGX*0.05;
-    fGXmax = fGXmax - dGX*0.05;
-  }
-
   std::cout << "Run " << fRun << endl;
   std::cout << "CellHeader " << fCellHeader << endl;
   std::cout << "Cell " << fCell << endl;
@@ -30,7 +17,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
 
   gStyle->SetOptStat(0);
   gSystem->Load("libfnal4all.so");
-  TFile *ff = new TFile( Form("rootfilesmerge/fnal-%05d-merge%d.root",fRun,merge) );
+  TFile *ff = new TFile( Form("rootfiles/fnal-%05d.root",fRun) );
   tree = (TTree*)ff->Get("ZIGZAG");
 
   TLatex *tex = new TLatex();
@@ -41,13 +28,6 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   publish->SetRightMargin(0.05);
   publish->SetBottomMargin(0.15);
   publish->SetLeftMargin(0.15);
-  publish->cd();
-  tree->Draw(Form("bx%s>>histBXD(200,-10,+10)",fSDet.Data()));
-  publish->SaveAs( Form("hist/D%dGX/BX_%d.root",det,fRun), "root");
-
-  TCanvas *mainOneCanvas = new TCanvas();
-  
-
   TCanvas *main1 = new TCanvas();
   main1->Divide(4,3);
   TF1 *bx = new TF1("bx","[0]*TMath::Gaus(x,[1],[2])");
@@ -69,37 +49,32 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   line->SetLineColor( kRed-3 );
   TString cuts0 = Form("(ok%s==1)&&(max%s<3500)&&(chi2<%f)",
 		       fSDet.Data(),fSDet.Data(),fChiMax);
-  //TString cuts1 = Form("%s&&(wd%s>0)&&(wd%s<7)",
-  TString cuts1 = Form("%s&&(wd%s>%d)&&(wd%s<20)",
-		       cuts0.Data(),fSDet.Data(),merge>1?merge:0,fSDet.Data());
+  //TString cuts1 = Form("%s&&(wd%s>1)&&(wd%s<7)",
+  TString cuts1 = Form("%s&&(wd%s>0)&&(wd%s<7)",
+		       cuts0.Data(),fSDet.Data(),fSDet.Data());
   TString cuts2;
   cuts0 = cuts1;
   //=====
   main1->cd(1);
   tree->Draw(Form("ok%s>>hist0(3,-0.5,2.5)",fSDet.Data()),    cuts0.Data());
   TH1D *hist0 = (TH1D*) gROOT->FindObject( "hist0" );
-  hist0->SetTitle("");
   hist0->GetXaxis()->SetTitle( Form("ok%s",fSDet.Data()) );
   main1->cd(2)->SetLogy(1);
   tree->Draw(Form("wd%s>>hist1(27,-0.5,26.5)",fSDet.Data()),  cuts0.Data());
   TH1D *hist1 = (TH1D*) gROOT->FindObject( "hist1" );
-  hist1->SetTitle("");
   hist1->GetXaxis()->SetTitle( Form("wd%s",fSDet.Data()) );
   main1->cd(3)->SetLogy(1);
   tree->Draw(Form("ampl%s>>hist2(100,0,1e+5)",fSDet.Data()),  cuts0.Data());
   TH1D *hist2 = (TH1D*) gROOT->FindObject( "hist2" );
-  hist2->SetTitle(""); 
   hist2->GetXaxis()->SetTitle( Form("ampl%s",fSDet.Data()) );
   main1->cd(4)->SetLogy(1);
   tree->Draw(Form("max%s>>hist3(100,0,4100)",fSDet.Data()),   cuts0.Data());
   TH1D *hist3 = (TH1D*) gROOT->FindObject( "hist3" );
-  hist3->SetTitle("");
   hist3->GetXaxis()->SetTitle( Form("max%s",fSDet.Data()) );
   //=====
   main1->cd(5);
   tree->Draw(Form("bx%s>>hist4(100,-20,+20)",fSDet.Data()),   cuts0.Data());
   TH1D *hist4 = (TH1D*) gROOT->FindObject( "hist4" );
-  hist4->SetTitle("");
   hist4->GetXaxis()->SetTitle( Form("bx%s",fSDet.Data()) );
   bx->SetParameter(1,hist4->GetMean());
   bx->SetParLimits(1,hist4->GetMean()-5,hist4->GetMean()+5);
@@ -114,7 +89,6 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   main1->cd(6);
   tree->Draw(Form("by%s>>hist5(100,-20,+20)",fSDet.Data()),   cuts0.Data());
   TH1D *hist5 = (TH1D*) gROOT->FindObject( "hist5" );
-  hist5->SetTitle("");
   hist5->GetXaxis()->SetTitle( Form("by%s",fSDet.Data()) );
   by->SetParameter(1,hist5->GetMean());
   by->SetParLimits(1,hist5->GetMean()-5,hist5->GetMean()+5);
@@ -132,32 +106,26 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   main1->cd(7);
   tree->Draw(Form("bx2mm%s>>hist6",fSDet.Data()),      cuts1.Data());
   TH1D *hist6 = (TH1D*) gROOT->FindObject( "hist6" );
-  hist6->SetTitle("");
   hist6->GetXaxis()->SetTitle( Form("bx2mm%s",fSDet.Data()) );
   main1->cd(8);
   tree->Draw(Form("by2mm%s>>hist7",fSDet.Data()),      cuts1.Data());
   TH1D *hist7 = (TH1D*) gROOT->FindObject( "hist7" );
-  hist7->SetTitle("");
   hist7->GetXaxis()->SetTitle( Form("by2mm%s",fSDet.Data()) );
   main1->cd(9);
   tree->Draw(Form("bxpitch%s>>hist8",fSDet.Data()),    cuts1.Data());
   TH1D *hist8 = (TH1D*) gROOT->FindObject( "hist8" );
-  hist8->SetTitle("");
   hist8->GetXaxis()->SetTitle( Form("bxpitch%s",fSDet.Data()) );
   main1->cd(10);
   tree->Draw(Form("gxpitch%s>>hist9(100,-1.1,+1.1)",fSDet.Data()),    cuts1.Data());
   TH1D *hist9 = (TH1D*) gROOT->FindObject( "hist9" );
-  hist9->SetTitle("");
   hist9->GetXaxis()->SetTitle( Form("gxpitch%s",fSDet.Data()) );
   main1->cd(11);
   tree->Draw(Form("bybeat%s>>hist10",fSDet.Data()),                   cuts1.Data());
   TH1D *hist10 = (TH1D*) gROOT->FindObject( "hist10" );
-  hist10->SetTitle("");
   hist10->GetXaxis()->SetTitle( Form("bybeat%s",fSDet.Data()) );
   main1->cd(12)->SetLogy(1);
   tree->Draw(Form("gx%s>>hist11",fSDet.Data()),                       cuts1.Data());
   TH1D *hist11 = (TH1D*) gROOT->FindObject( "hist11" );
-  hist11->SetTitle("");
   hist11->GetXaxis()->SetTitle( Form("gx%s",fSDet.Data()) );
   Double_t gxmea = hist11->GetMean();
   Double_t gxsig = hist11->GetRMS();
@@ -165,9 +133,8 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   TCanvas *main2 = new TCanvas();
   main2->Divide(4,4);
   main2->cd(1);
-  tree->Draw(Form("dx%s>>hist12(100,-5,+5)",fSDet.Data()),        cuts1.Data());
+  tree->Draw(Form("dx%s>>hist12",fSDet.Data()),        cuts1.Data());
   TH1D *hist12 = (TH1D*) gROOT->FindObject( "hist12" );
-  hist12->SetTitle("");
   if(hist12->GetEntries()<100) return 1;
   dx->SetParameter(1,hist12->GetMean());
   dx->SetParLimits(1,hist12->GetMean()-3,hist12->GetMean()+3);
@@ -193,7 +160,6 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   line->DrawLine(fGXmin,fGYmin,fGXmax,fGYmin);
   line->DrawLine(fGXmin,fGYmax,fGXmax,fGYmax);
   TH2D *hist14 = (TH2D*) gROOT->FindObject( "hist14" );
-  hist14->SetTitle("");
   hist14->GetXaxis()->SetTitle( Form("bx%s [mm]",fSDet.Data()) );
   hist14->GetYaxis()->SetTitle( Form("by%s [mm]",fSDet.Data()) );
   tex->DrawLatexNDC(0.15,0.85,Form("<x>  %f", hist14->GetMean(1)));
@@ -209,7 +175,6 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   pro15->Draw("SAME");
   line->DrawLine(fGXmin,-10,fGXmin,+10);
   line->DrawLine(fGXmax,-10,fGXmax,+10);
-  hist15->SetTitle("");
   hist15->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   hist15->GetXaxis()->SetTitle( Form("bx%s [mm]",fSDet.Data()) );
   //=====
@@ -229,36 +194,12 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   //Double_t chi2 = mxb->GetChisquare()/mxb->GetNDF();
   line->DrawLine(fGYmin,-10,fGYmin,+10);
   line->DrawLine(fGYmax,-10,fGYmax,+10);
-  hist16->SetTitle("");
   hist16->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   hist16->GetXaxis()->SetTitle( Form("by%s [mm]",fSDet.Data()) );
   //=====
-  //cuts2 = Form("%s&&(bx%s>%f)&&(bx%s<%f)&&(by%s>%f)&&(by%s<%f)&&(max%s>400)",
-  //	       cuts1.Data(),fSDet.Data(),fGXmin,fSDet.Data(),fGXmax,
-  //	       fSDet.Data(),fGYmin,fSDet.Data(),fGYmax,fSDet.Data());
   cuts2 = Form("%s&&(bx%s>%f)&&(bx%s<%f)&&(by%s>%f)&&(by%s<%f)",
 	       cuts1.Data(),fSDet.Data(),fGXmin,fSDet.Data(),fGXmax,
 	       fSDet.Data(),fGYmin,fSDet.Data(),fGYmax);
-  TString cuts2chargesharingMultiple = Form("%s&&(((double)qmampl%s/(double)ampl%s)<%f)",cuts2.Data(),fSDet.Data(),fSDet.Data(),cutmultiple);
-  TString cuts2chargesharingSingle = Form("%s&&(((double)qmampl%s/(double)ampl%s)>%f)",cuts2.Data(),fSDet.Data(),fSDet.Data(),cutsingle);
-
-  main1->cd(2)->SetLogy(0);
-  tree->Draw(Form("wd%s>>hist1FINAL(27,-0.5,26.5)",fSDet.Data()),  cuts2.Data(),"SAME");
-  TH1D *hist1FINAL = (TH1D*) gROOT->FindObject( "hist1FINAL" );
-  hist1FINAL->SetLineColor(kRed-3);
-  tex->SetTextColor(kRed-3);
-  tex->DrawLatexNDC(0.6,0.8,Form("%.1f",hist1FINAL->GetMean()));
-  main1->cd(3);
-  tree->Draw(Form("ampl%s>>hist2FINAL(100,0,1e+5)",fSDet.Data()),  cuts2.Data(),"SAME");
-  TH1D *hist2FINAL = (TH1D*) gROOT->FindObject( "hist2FINAL" );
-  hist2FINAL->SetLineColor(kRed-3);
-  tex->DrawLatexNDC(0.6,0.8,Form("%.0f",hist2FINAL->GetMean()));
-  main1->cd(4);
-  tree->Draw(Form("max%s>>hist3FINAL(100,0,4100)",fSDet.Data()),  cuts2.Data(),"SAME");
-  TH1D *hist3FINAL = (TH1D*) gROOT->FindObject( "hist3FINAL" );
-  hist3FINAL->SetLineColor(kRed-3);
-  tex->DrawLatexNDC(0.6,0.8,Form("%.0f",hist3FINAL->GetMean()));
-
   //=====
   main2->cd(4);
   tree->Draw(Form("dx%s>>hist19(100,%f,%f)",fSDet.Data(),
@@ -266,7 +207,6 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
 		  hist12->GetMean()+2*hist12->GetRMS()),
 	     cuts2.Data());
   TH1D *hist19 = (TH1D*) gROOT->FindObject( "hist19" );
-  hist19->SetTitle("");
   if(hist19->GetEntries()<100) return 1;
   dx->SetParameter(1,hist19->GetMean());
   dx->SetParLimits(1,hist19->GetMean()-3,hist19->GetMean()+3);
@@ -289,8 +229,8 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   tex->SetTextColor(kBlack);
   hist19->GetXaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
   //=====
-  int nbinsX = (fGXmax-fGXmin)/0.05;///fXPitch; // each 50 microns
-  int nbinsY = (fGYmax-fGYmin)/0.05;///(20/fYBeat); // each 50 microns
+  int nbinsX = (fGXmax-fGXmin)/fXPitch/0.05; // each 50 microns
+  int nbinsY = (fGYmax-fGYmin)/(20/fYBeat)/(0.05); // each 50 microns
   main2->cd(13);
   tex->SetTextSize(0.07);
   tex->DrawLatexNDC(0.15,0.90,Form("%s %s", fSDet.Data(), fTech.Data()));
@@ -307,13 +247,12 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   tex->SetTextSize(0.05);
   //=====
   main2->cd(6);
-  tree->Draw(Form("dx%s:gx%s>>histO17(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
+  tree->Draw(Form("dx%s:bx%s>>histO17(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
 		  nbinsX,fGXmin,fGXmax,200,dxmea-5*dxsig,dxmea+5*dxsig),
              cuts2.Data(),"colz");
   TH2D *histO17 = (TH2D*) gROOT->FindObject( "histO17" );
-  histO17->SetTitle("");
   histO17->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
-  histO17->GetXaxis()->SetTitle( Form("gx%s [mm]",fSDet.Data()) );  
+  histO17->GetXaxis()->SetTitle( Form("bx%s [mm]",fSDet.Data()) );  
   TProfile *pro17 = histO17->ProfileX( "prof17" );
   pro17->SetMarkerColor(kBlack);
   pro17->SetLineColor(kBlack);
@@ -325,93 +264,8 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   pro17->Draw("SAME");
 
   //---*---
-  publish->cd(); 
-  tree->Draw( Form("gx%s:bx%s>>histGXvsBX(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
-		   2*nbinsX,fGXmin,fGXmax,2*nbinsX,fGXmin,fGXmax),
-	      cuts2.Data(), "col");
-  TH2D *GXvsBX = (TH2D*) gROOT->FindObject( "histGXvsBX" );
-  GXvsBX->SetTitle("");
-  GXvsBX->GetXaxis()->SetTitle("BX  (mm)");
-  GXvsBX->GetYaxis()->SetTitle("GX  (mm)");
-  publish->SaveAs( Form("res_merge/D%dGX/GXvsBX_D%d_%d.pdf",det,det,fRun), "pdf");
-
-  //
-  tree->Draw( Form("wd%s:bx%s>>histWDvsBX(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
-		   2*nbinsX,fGXmin,fGXmax,50,-0.5,49.5),
-	      cuts2.Data(), "col");
-  TH2D *WDvsBX = (TH2D*) gROOT->FindObject( "histWDvsBX" );
-  WDvsBX->SetTitle("");
-  WDvsBX->GetYaxis()->SetTitle("< WD >");
-  WDvsBX->GetXaxis()->SetTitle("BX  (mm)");
-
-  TH1D *WDvsBX_X = WDvsBX->ProjectionX("WDvsBX_X");
-  TProfile *WDvsBX_PX = WDvsBX->ProfileX("WDvsBX_PX");
-  WDvsBX_PX->Rebin(4);
-
-  //
-  tree->Draw( Form("(max%s/ampl%s):bx%s>>histMoAvsBX(%d,%f,%f,%d,%f,%f)",
-		   fSDet.Data(),fSDet.Data(),fSDet.Data(),
-		   2*nbinsX,fGXmin,fGXmax,50,0.0,1.0),
-	      cuts2.Data(), "col");
-  TH2D *MoAvsBX = (TH2D*) gROOT->FindObject( "histMoAvsBX" );
-  MoAvsBX->SetTitle("");
-  MoAvsBX->GetYaxis()->SetTitle("Max / Ampl");
-  MoAvsBX->GetXaxis()->SetTitle("BX  (mm)");
-
-  TProfile *MoAvsBX_PX = MoAvsBX->ProfileX("MoAvsBX_PX");
-  MoAvsBX_PX->Rebin(4);
-
-  //
-  tree->Draw( Form("((double)qmampl%s/(double)ampl%s):bx%s>>histMaAvsBX(%d,%f,%f,%d,%f,%f)",
-		   fSDet.Data(),fSDet.Data(),fSDet.Data(),
-		   2*nbinsX,fGXmin,fGXmax,50,0.0,1.0),
-	      cuts2.Data(), "col");
-  TH2D *MaAvsBX = (TH2D*) gROOT->FindObject( "histMaAvsBX" );
-  MaAvsBX->SetTitle("");
-  MaAvsBX->GetYaxis()->SetTitle("QMAmpl / Ampl");
-  MaAvsBX->GetXaxis()->SetTitle("BX  (mm)");
-  publish->SaveAs( Form("res_merge/D%dGX/QRvsBX_D%d_%d.pdf",det,det,fRun), "pdf");
-
-  MaAvsBX->GetZaxis()->SetRangeUser(2,MaAvsBX->GetMaximum());
-  TProfile *MaAvsBX_PX = MaAvsBX->ProfileX("MaAvsBX_PX");
-  MaAvsBX_PX->Rebin(4);
-  //
-  tree->Draw( Form("dx%s>>dxSingle(%d,%f,%f)",
-		   fSDet.Data(),200,dxmea-0.75,dxmea+0.75),
-              cuts2chargesharingSingle.Data());
-  TH1D *dxSingle = (TH1D*) gROOT->FindObject( "dxSingle" );
-  dxSingle->SetTitle("");
-  dxSingle->GetYaxis()->SetTitle("counts");
-  dxSingle->GetXaxis()->SetTitle("DX  (mm)");
-  
-  tree->Draw( Form("dx%s>>dxMultiple(%d,%f,%f)",
-		   fSDet.Data(),200,dxmea-0.75,dxmea+0.75),
-              cuts2chargesharingMultiple.Data());
-  TH1D *dxMultiple = (TH1D*) gROOT->FindObject( "dxMultiple" );
-  dxMultiple->SetTitle("");
-  dxMultiple->GetYaxis()->SetTitle("counts");
-  dxMultiple->GetXaxis()->SetTitle("DX  (mm)");
-  
-  //
-  tree->Draw(Form("dx%s:gx%s>>dxgxSingle(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
-		  nbinsX,fGXmin,fGXmax,200,dxmea-0.75,dxmea+0.75),
-             cuts2chargesharingSingle.Data(),"colz");
-  TH2D *dxgxSingle = (TH2D*) gROOT->FindObject( "dxgxSingle" );
-  dxgxSingle->SetTitle("");
-  dxgxSingle->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
-  dxgxSingle->GetXaxis()->SetTitle( Form("gx%s [mm]",fSDet.Data()) );  
-  TProfile *pdxgxSingle = dxgxSingle->ProfileX( "pdxgxSingle" );
-  //
-  tree->Draw(Form("dx%s:gx%s>>dxgxMultiple(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
-		  nbinsX,fGXmin,fGXmax,200,dxmea-0.75,dxmea+0.75),
-             cuts2chargesharingMultiple.Data(),"colz");
-  TH2D *dxgxMultiple = (TH2D*) gROOT->FindObject( "dxgxMultiple" );
-  dxgxMultiple->SetTitle("");
-  dxgxMultiple->GetYaxis()->SetTitle( Form("dx%s [mm]",fSDet.Data()) );
-  dxgxMultiple->GetXaxis()->SetTitle( Form("gx%s [mm]",fSDet.Data()) );  
-  TProfile *pdxgxMultiple = dxgxMultiple->ProfileX( "pdxgxMultiple" );
-  //
-  tree->Draw( Form("dx%s:gx%s>>histDXMBX(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
+  publish->cd();
+  tree->Draw( Form("dx%s:bx%s>>histDXMBX(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
 		   2*nbinsX,fGXmin,fGXmax,200,dxmea-0.75,dxmea+0.75),
 	      cuts2.Data(), "col");
   TH2D *DXMBX = (TH2D*) gROOT->FindObject( "histDXMBX" );
@@ -424,30 +278,20 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   DXMBX->GetXaxis()->SetTitle( "BeamX  [mm]" );
   DXMBX->GetYaxis()->SetTitle( "Residual  [mm]" );
   DXMBX->GetXaxis()->SetNdivisions(508);
-  publish->SaveAs( Form("res_merge/D%dGX/DXBXP_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%d/DXBXP_D%d_%d.pdf",det,det,fRun), "pdf");
   //=====
   main2->cd(5);
   DXMBX->Draw("col");
-  GXvsBX->Draw("col");
   //=====
 
   //=====
   TH2D *histR17 = new TH2D("histR17",
-			   Form(";gx%s [mm];dx%s - NL(bxD)  [mm]",fSDet.Data(),fSDet.Data()),
+			   Form(";bx%s [mm];dx%s - NL(bxD)  [mm]",fSDet.Data(),fSDet.Data()),
 			   nbinsX,fGXmin,fGXmax,200,-5*dxsig,5*dxsig);
   TH1D *histDX17 = new TH1D("histDX17",
 			    Form(";dx%s - NL(bXD)  [mm]",fSDet.Data()),
 			    200,-5*dxsig,+5*dxsig);
   histDX17->SetLineColor(kBlack);
- 
-  //======
-  TH2D *histR17single = new TH2D("histR17single",
-			   Form(";gx%s [mm];dx%s - NL(bxD)  [mm]",fSDet.Data(),fSDet.Data()),
-			   nbinsX,fGXmin,fGXmax,200,-0.75,+0.75);
-  TH1D *histDX17single = new TH1D("histDX17single",
-			    Form(";dx%s - NL(bXD)  [mm]",fSDet.Data()),
-			    200,-0.75,+0.75);
-  histDX17single->SetLineColor(kBlack);
   //======
   TH2D *histO18 = new TH2D("histO18",
 			   Form(";by%s [mm];dx%s - NL(bxD)  [mm]",fSDet.Data(),fSDet.Data()),
@@ -468,16 +312,14 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   Double_t corrX = 0;
   Double_t corrXY = 0;
   Bool_t okDET;
-  Int_t maxDET, amplDET, qmamplDET;
+  Int_t maxDET, amplDET;
   UInt_t wdDET;
-  Double_t chi2, bxDET, byDET, dxDET, dxDETREF, bybeatDET, gxDET;
+  Double_t chi2, bxDET, byDET, dxDET, dxDETREF, bybeatDET;
   tree->SetBranchAddress(     "chi2",               &chi2);
   tree->SetBranchAddress(Form("ok%s",fSDet.Data()), &okDET);
   tree->SetBranchAddress(Form("max%s",fSDet.Data()),&maxDET);
-  tree->SetBranchAddress(Form("qmampl%s",fSDet.Data()),&qmamplDET);
   tree->SetBranchAddress(Form("ampl%s",fSDet.Data()),&amplDET);
   tree->SetBranchAddress(Form("wd%s",fSDet.Data()), &wdDET);
-  tree->SetBranchAddress(Form("gx%s",fSDet.Data()), &gxDET);
   tree->SetBranchAddress(Form("bx%s",fSDet.Data()), &bxDET);
   tree->SetBranchAddress(Form("by%s",fSDet.Data()), &byDET);
   tree->SetBranchAddress(Form("bybeat%s",fSDet.Data()), &bybeatDET);
@@ -498,31 +340,20 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
        bxDET>fGXmax || byDET<fGYmin || byDET>fGYmax ) {
       continue;
     }
-    if(double(qmamplDET)/double(amplDET)<cutmultiple) { //non single selection
-      int binXcor = pdxgxMultiple->FindBin( gxDET );
-      double corrXsingle = pdxgxMultiple->GetBinContent( binXcor );
-      histR17single->Fill( gxDET, dxDET-corrXsingle );
-      histDX17single->Fill( dxDET-corrXsingle );
-    }
     //PLOT
     if(0) {
       corrX = dxVX->Eval(bxDET);
     } else {
-      int binXcor = pro17->FindBin( gxDET );
+      int binXcor = pro17->FindBin( bxDET );
       corrX = pro17->GetBinContent(binXcor);
     }
-    histR17->Fill( gxDET, dxDET-corrX );
+    histR17->Fill( bxDET, dxDET-corrX );
     histDX17->Fill( dxDET-corrX );
     histO18->Fill( byDET, dxDET-corrX );
     histDXMBY->Fill( byDET, dxDET-corrX );
   }
   //---*---
   publish->cd();
-  tree->Draw(Form("gx%s>>histGXD(200,-10,+10)",fSDet.Data()), cuts2.Data());
-  publish->SaveAs( Form("hist/D%dGX/GX_%d.root",det,fRun), "root");
-  tree->Draw(Form("dx%s>>histDXD(200,-10,+10)",fSDet.Data()), cuts2.Data());
-  publish->SaveAs( Form("hist/D%dGX/DX_%d.root",det,fRun), "root");
-
   histDXMBY->GetYaxis()->SetLabelSize(0.07);
   histDXMBY->GetXaxis()->SetLabelSize(0.07);
   histDXMBY->GetYaxis()->SetTitleOffset(1.0);
@@ -530,7 +361,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   histDXMBY->GetXaxis()->SetTitleSize(0.07);
   histDXMBY->GetXaxis()->SetNdivisions(508);
   histDXMBY->Draw("col");
-  publish->SaveAs( Form("res_merge/D%dGX/DXBYP_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%d/DXBYP_D%d_%d.pdf",det,det,fRun), "pdf");
   //=====
   main2->cd(9);
   histDXMBY->Draw("col");
@@ -555,9 +386,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   tree->Draw(Form("ampl%s>>Fhist2(100,0,1e+5)",fSDet.Data()),  cuts2.Data());
   TH1D *Fhist1 = (TH1D*) gROOT->FindObject("Fhist1");
   TH1D *Fhist2 = (TH1D*) gROOT->FindObject("Fhist2");
-  Fhist1->SetTitle("");
   Fhist1->GetXaxis()->SetTitle( Form("wd%s",fSDet.Data()) );
-  Fhist2->SetTitle("");
   Fhist2->GetXaxis()->SetTitle( Form("ampl%s",fSDet.Data()) );
   main2->cd(14);
   Fhist1->DrawNormalized();
@@ -603,7 +432,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
       corrX = dxVX->Eval(bxDET);
       corrXY = dxVY->Eval(byDET);
     } else {
-      int binXcor = pro17->FindBin( gxDET );
+      int binXcor = pro17->FindBin( bxDET );
       corrX = pro17->GetBinContent(binXcor);
       int binYcor = pro18->FindBin( byDET );
       corrXY = pro18->GetBinContent(binYcor);
@@ -623,7 +452,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   //====
   ofstream fcorout;
   // CORR-X
-  fcorout.open( Form("res_merge/D%dGX/CORXY/CORX_D%d_%d.dat",det,det,fRun) );
+  fcorout.open( Form("res/D%d/CORXY/CORX_D%d_%d.dat",det,det,fRun) );
   for(int ib=0; ib!=pro17->GetXaxis()->GetNbins(); ++ib) {
     fcorout << " " << pro17->GetBinCenter( ib+1 );
     fcorout << " " << pro17->GetBinContent( ib+1 );
@@ -631,7 +460,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   }
   fcorout.close();
   // CORR-XY
-  fcorout.open( Form("res_merge/D%dGX/CORXY/CORXY_D%d_%d.dat",det,det,fRun) );
+  fcorout.open( Form("res/D%d/CORXY/CORXY_D%d_%d.dat",det,det,fRun) );
   for(int ib=0; ib!=pro18->GetXaxis()->GetNbins(); ++ib) {
     fcorout << " " << pro18->GetBinCenter( ib+1 );
     fcorout << " " << pro18->GetBinContent( ib+1 );
@@ -657,7 +486,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   tex->SetTextColor(kBlack);
 
   //---*---
-  tex->SetTextSize(0.05);
+  tex->SetTextSize(0.08);
 
   publish->cd();
   histDX18->SetTitle("");
@@ -672,16 +501,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   histDX18->GetXaxis()->SetNdivisions(508);
   tex->SetTextColor(kBlue-3);
   tex->DrawLatexNDC(0.65,0.80,Form("#sigma  %.0f#mum",dxY->GetParameter(2)*1e3));
-  tex->SetTextColor(kBlack);
-  tex->DrawLatexNDC(0.16,0.88,Form("Run %d", fRun));
-  tex->DrawLatexNDC(0.16,0.81,Form("%s %s", fSDet.Data(), fTech.Data()));
-  tex->DrawLatexNDC(0.16,0.74,Form("Board %s", fBoard.Data()));
-  tex->DrawLatexNDC(0.16,0.67,Form("Cell %s > %s", fCellHeader.Data(), fCell.Data()));
-  tex->DrawLatexNDC(0.16,0.60,Form("xPitch %.3f", fXPitch));
-  tex->DrawLatexNDC(0.16,0.53,Form("xStretch %.0f", fXStretch));
-  tex->DrawLatexNDC(0.16,0.46,Form("yPeriod %.3f", 20/fYBeat));
-
-  publish->SaveAs( Form("res_merge/D%dGX/DX3_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%d/DX3_D%d_%d.pdf",det,det,fRun), "pdf");
   hist19->Draw();
   hist19->SetTitle("");
   hist19->GetYaxis()->SetLabelSize(0.07);
@@ -694,7 +514,7 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   hist19->GetXaxis()->SetNdivisions(508);
   tex->SetTextColor(kRed-3);
   tex->DrawLatexNDC(0.65,0.80,Form("#sigma  %.0f#mum",dx->GetParameter(2)*1e3));
-  publish->SaveAs( Form("res_merge/D%dGX/DX1_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%d/DX1_D%d_%d.pdf",det,det,fRun), "pdf");
 
   //=====
   /*
@@ -713,95 +533,17 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   tex->SetTextColor(kBlack);
   */
   //=====
-  main1->SaveAs( Form("res_merge/D%dGX/resolution_%s_%s_%s_%d-merge%d.pdf[",
-		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun,merge),
+  main1->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf[",
+		     det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		"pdf");
 
-  main1->SaveAs( Form("res_merge/D%dGX/resolution_%s_%s_%s_%d-merge%d.pdf",
-		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun,merge),
+  main1->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf",
+		     det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		"pdf");
-  main2->SaveAs( Form("res_merge/D%dGX/resolution_%s_%s_%s_%d-merge%d.pdf",
-		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun,merge),
+  main2->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf",
+		     det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		"pdf");
-
-  main1->cd(1);
-  WDvsBX_X->Draw();
-
-  main1->cd(2);
-  WDvsBX_PX->Draw();
-
-  main1->cd(3)->SetLogy(0);
-  MoAvsBX->Draw("colz");
-  MoAvsBX_PX->Draw("same");
-
-  main1->cd(4)->SetLogy(0);
-  MaAvsBX->Draw("colz");
-  MaAvsBX_PX->Draw("same");
-  line->DrawLine(-10,cutmultiple,+10,cutmultiple);
-
-  main1->cd(5);
-  dxgxSingle->Draw("colz");
-  pdxgxSingle->Draw("same");
-
-  main1->cd(6);
-  dxSingle->Draw("");
-  tex->DrawTextNDC(0.6,0.85,Form("Entries %.1f k",dxSingle->GetEntries()*1e-3));
-  tex->DrawTextNDC(0.6,0.8,Form("RMS %.1f um",dxSingle->GetRMS()*1e3));
-  publish->cd();
-  dxSingle->SetTitle("Single hits");
-  dxSingle->Draw();
-  tex->DrawTextNDC(0.6,0.85,Form("Entries %.1f k",dxSingle->GetEntries()*1e-3));
-  tex->DrawTextNDC(0.6,0.8,Form("RMS %.1f um",dxSingle->GetRMS()*1e3));
-  publish->SaveAs( Form("res_merge/D%dGX/singleDXcounts_D%d_%d.pdf",det,det,fRun), "pdf");
-  main1->cd(7);
-  dxgxMultiple->Draw("colz");
-  pdxgxMultiple->Draw("same");
-
-  main1->cd(8);
-  dxMultiple->Draw("");
-  tex->DrawTextNDC(0.6,0.85,Form("Entries %.1f k",dxMultiple->GetEntries()*1e-3));
-  tex->DrawTextNDC(0.6,0.8,Form("RMS %.1f um",dxMultiple->GetRMS()*1e3));
-  publish->cd();
-  dxMultiple->SetTitle("Multiple hits");
-  dxMultiple->Draw();
-  tex->DrawTextNDC(0.6,0.85,Form("Entries %.1f k",dxMultiple->GetEntries()*1e-3));
-  tex->DrawTextNDC(0.6,0.8,Form("RMS %.1f um",dxMultiple->GetRMS()*1e3));
-  publish->SaveAs( Form("res_merge/D%dGX/multipleDXcounts_D%d_%d.pdf",det,det,fRun), "pdf");
-
-  main1->cd(11);
-  histR17single->Draw("colz");
-
-  main1->cd(12)->SetLogy(0);
-  histDX17single->Draw("");
-  TF1 *fitdxMultiple = new TF1("fitdxMultiple","[3]+[0]*TMath::Gaus(x,[1],[2])");
-  fitdxMultiple->SetLineColor( kRed-3 );
-  fitdxMultiple->SetParameter(1,0);
-  fitdxMultiple->SetParLimits(1,-0.75,+0.75);
-  fitdxMultiple->SetParameter(2,dxsig);
-  fitdxMultiple->SetParLimits(2,0.001,dxsig*5);
-  histDX17single->Fit(fitdxMultiple);
-  tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",fitdxMultiple->GetParameter(2)*1e3,
-                                   fitdxMultiple->GetParError(2)*1e3));
-  tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",fitdxMultiple->GetParameter(1)*1e3,
-                                   fitdxMultiple->GetParError(1)*1e3));
-  publish->cd();
-  histDX17single->SetTitle("Mutiple hits corrected");
-  histDX17single->Draw();
-  tex->DrawLatexNDC(0.60,0.80,Form("#sigma %.1f (%.1f)",fitdxMultiple->GetParameter(2)*1e3,
-                                   fitdxMultiple->GetParError(2)*1e3));
-  tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",fitdxMultiple->GetParameter(1)*1e3,
-                                   fitdxMultiple->GetParError(1)*1e3));
-
-  publish->SaveAs( Form("res_merge/D%dGX/MultipleNLDX_D%d_%d.pdf",det,det,fRun), "pdf");
-
-  main1->cd(9)->Clear();
-  main1->cd(10)->Clear();
-
-  main1->SaveAs( Form("res_merge/D%dGX/resolution_%s_%s_%s_%d-merge%d.pdf",
-		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun,merge),
-                "pdf" );
-
-  main2->SaveAs( Form("res_merge/D%dGX/FIDUCIAL_D%d_%d.pdf",
+  main2->SaveAs( Form("res/D%d/FIDUCIAL_D%d_%d.pdf",
 		      det,det,fRun),
 		"pdf");
   //======
@@ -852,11 +594,11 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   tex->DrawLatexNDC(0.15,0.35,Form("#mu %.0f #mum",fitdxmea*1e3));
   //fitdxall->Draw("SAME");
   //main2->SaveAs( "fig2.root", "root" );
-  main3->SaveAs( Form("res_merge/D%dGX/resolution_%s_%s_%s_%d-merge%d.pdf",
-		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun,merge),
+  main3->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf",
+		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		 "pdf");
-  main3->SaveAs( Form("res_merge/D%dGX/resolution_%s_%s_%s_%d-merge%d.pdf]",
-		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun,merge),
+  main3->SaveAs( Form("res/D%d/resolution_%s_%s_%s_%d.pdf]",
+		      det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		 "pdf");
   TCanvas *mainExtra = new TCanvas();
   mainExtra->Divide(3,3);
@@ -877,10 +619,13 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   TProfile *pMAXvsBX = hMAXvsBX->ProfileX("pMAXvsBX");
   pMAXvsBX->SetLineColor(kRed-3);
   pMAXvsBX->SetMarkerColor(kRed-3);
+  pMAXvsBX->SetMarkerStyle(20);
   pMAXvsBX->Draw("same");
-  mainExtra->SaveAs(Form("res_merge/D%dGX/qaextra_%s_%s_%s_%d.pdf",
+  mainExtra->SaveAs(Form("res/D%d/qaextra_%s_%s_%s_%d.pdf",
 			 det,fBoard.Data(),fSDet.Data(),fCell.Data(),fRun),
 		    "pdf");
+
+
 
   //==
   Double_t resultReso = fitdxsig*1e3;
@@ -889,10 +634,10 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
     resultReso = 0;
   }
   
-  ofstream fout( Form("res_merge/D%dGX/data/reso_%s_%s_run%d-merge%d.dat",
-		      det,fTech.Data(),fBoard.Data(),fRun,merge) );
-  std::cout << " RESULTS IN " << Form("res_merge/D%dGX/data/reso_%s_%s_run%d-merge%d.dat",
-				      det,fTech.Data(),fBoard.Data(),fRun,merge) << std::endl;
+  ofstream fout( Form("res/D%d/data/reso_%s_%s_run%d.dat",
+		      det,fTech.Data(),fBoard.Data(),fRun) );
+  std::cout << " RESULTS IN " << Form("res/D%d/data/reso_%s_%s_run%d.dat",
+				      det,fTech.Data(),fBoard.Data(),fRun) << std::endl;
   fout << " " << dx->GetParameter(1);
   fout << " " << dx->GetParameter(2)*1e3;
   fout << " " << dxX->GetParameter(2)*1e3;
@@ -901,14 +646,9 @@ void resolution2_GX_merge(int idx=24, int det = 3, float cutsingle=0.90, float c
   //fout << resultReso;
   fout << " " << fRun;
   fout << " " << fCell;
-  fout << " " << fXPitch*merge;
+  fout << " " << fXPitch;
   fout << " " << fYBeat;
   fout << " " << fXStretch;
-  fout << " " << fTech.Data();
-  fout << " " << fBoard.Data();
-  fout << " " << hist1FINAL->GetMean();
-  fout << " " << hist2FINAL->GetMean();
-  fout << " " << Form("%.0f",histDX18->GetEntries());
   fout << endl;
   fout.close();
 
