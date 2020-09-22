@@ -333,7 +333,7 @@ void resolution2_GX(int idx=24, int det = 3, float cutsingle=0.90, float cutmult
   GXvsBX->SetTitle("");
   GXvsBX->GetXaxis()->SetTitle("BX  (mm)");
   GXvsBX->GetYaxis()->SetTitle("GX  (mm)");
-  publish->SaveAs( Form("res/D%dGX/GXvsBX_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%dGX/GXvsBX_D%d_%d.root",det,det,fRun), "root");
 
   //
   tree->Draw( Form("wd%s:bx%s>>histWDvsBX(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
@@ -370,7 +370,7 @@ void resolution2_GX(int idx=24, int det = 3, float cutsingle=0.90, float cutmult
   MaAvsBX->SetTitle("");
   MaAvsBX->GetYaxis()->SetTitle("QMAmpl / Ampl");
   MaAvsBX->GetXaxis()->SetTitle("BX  (mm)");
-  publish->SaveAs( Form("res/D%dGX/QRvsBX_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%dGX/QRvsBX_D%d_%d.root",det,det,fRun), "root");
 
   MaAvsBX->GetZaxis()->SetRangeUser(2,MaAvsBX->GetMaximum());
   TProfile *MaAvsBX_PX = MaAvsBX->ProfileX("MaAvsBX_PX");
@@ -383,6 +383,7 @@ void resolution2_GX(int idx=24, int det = 3, float cutsingle=0.90, float cutmult
   dxSingle->SetTitle("");
   dxSingle->GetYaxis()->SetTitle("counts");
   dxSingle->GetXaxis()->SetTitle("DX  (mm)");
+  publish->SaveAs( Form("res/D%dGX/DXSINGLE_D%d_%d.root",det,det,fRun), "root");
   
   tree->Draw( Form("dx%s>>dxMultiple(%d,%f,%f)",
 		   fSDet.Data(),200,dxmea-0.75,dxmea+0.75),
@@ -391,6 +392,7 @@ void resolution2_GX(int idx=24, int det = 3, float cutsingle=0.90, float cutmult
   dxMultiple->SetTitle("");
   dxMultiple->GetYaxis()->SetTitle("counts");
   dxMultiple->GetXaxis()->SetTitle("DX  (mm)");
+  publish->SaveAs( Form("res/D%dGX/DXMULTIPLE_D%d_%d.root",det,det,fRun), "root");
   
   //
   tree->Draw(Form("dx%s:gx%s>>dxgxSingle(%d,%f,%f,%d,%f,%f)",fSDet.Data(),fSDet.Data(),
@@ -772,6 +774,7 @@ void resolution2_GX(int idx=24, int det = 3, float cutsingle=0.90, float cutmult
 
   main1->cd(12)->SetLogy(0);
   histDX17single->Draw("");
+  
   TF1 *fitdxMultiple = new TF1("fitdxMultiple","[3]+[0]*TMath::Gaus(x,[1],[2])");
   fitdxMultiple->SetLineColor( kRed-3 );
   fitdxMultiple->SetParameter(1,0);
@@ -791,7 +794,7 @@ void resolution2_GX(int idx=24, int det = 3, float cutsingle=0.90, float cutmult
   tex->DrawLatexNDC(0.60,0.75,Form("#mu %.1f (%.1f)",fitdxMultiple->GetParameter(1)*1e3,
                                    fitdxMultiple->GetParError(1)*1e3));
 
-  publish->SaveAs( Form("res/D%dGX/MultipleNLDX_D%d_%d.pdf",det,det,fRun), "pdf");
+  publish->SaveAs( Form("res/D%dGX/MultipleNLDX_D%d_%d.root",det,det,fRun), "root");
 
   main1->cd(9)->Clear();
   main1->cd(10)->Clear();
